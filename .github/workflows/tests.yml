@@ -1,0 +1,71 @@
+# Browser tests for doc-scanner-pdf (tools/tests, Playwright + Chromium).
+# Runs on every push/PR that touches the app or the tests. The web site is published from a passing commit to
+# chatrawichai-envbr/chatrawichai-envbr.github.io with tools/publish-site.sh (see CLAUDE.md, published-site.yml).
+name: Tests
+
+on:
+  push:
+    paths:
+      - 'doc-scanner-pdf/**'
+      - 'tools/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    paths:
+      - 'doc-scanner-pdf/**'
+      - 'tools/**'
+      - '.github/workflows/tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: tools/tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/tests/package-lock.json
+
+      - name: Verify vendored libraries (SHA-256)
+        working-directory: doc-scanner-pdf/vendor
+        run: |
+          # every library folder must list its files in SHA256SUMS (a new library cannot skip the check)
+          for d in */; do
+            d="${d%/}"
+            [ -f "$d/SHA256SUMS" ] || { echo "::error::vendor/$d has no SHA256SUMS"; exit 1; }
+            (cd "$d" && sha256sum --check --strict --quiet SHA256SUMS) || { echo "::error::checksum mismatch in vendor/$d"; exit 1; }
+            echo "vendor/$d OK"
+          done
+
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run all suites
+        run: node run-all.js
+
+      - name: Upload screenshots and PDFs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-output
+          path: |
+            tools/tests/out
+            !tools/tests/out/site-*
+          retention-days: 7
+          if-no-files-found: ignore

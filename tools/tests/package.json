@@ -1,0 +1,13 @@
+{
+  "name": "doc-scanner-pdf-tests",
+  "private": true,
+  "description": "Browser tests for doc-scanner-pdf (Playwright + Chromium)",
+  "license": "MIT",
+  "scripts": {
+    "test": "node run-all.js"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "6.3.289",
+    "playwright": "1.56.1"
+  }
+}

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Embedded without camera</title>
+<!-- Test helper: the app embedded in a frame whose permissions policy blocks the camera (like Google Apps Script) -->
+<style>html, body { margin: 0; height: 100%; } iframe { border: 0; width: 100%; height: 100%; display: block; }</style>
+</head>
+<body>
+<iframe id="app" src="/index.html" allow="camera 'none'; microphone 'none'"></iframe>
+</body>
+</html>

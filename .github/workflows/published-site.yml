@@ -1,0 +1,52 @@
+# The public web site is published from this repository to chatrawichai-envbr/chatrawichai-envbr.github.io (GitHub Pages user site):
+# tools/publish-site.sh writes doc-scanner-pdf/ there → https://chatrawichai-envbr.github.io/doc-scanner-pdf/
+#
+# Daily check (and on demand) that the published folder is exactly tools/publish-site.sh's output for its commit
+# and that doc-scanner-pdf/ has not changed on main since then (nothing left unpublished).
+# The site repository is public, so it is read without credentials. Actions are pinned to full commit SHAs.
+name: Published site
+
+on:
+  schedule:
+    - cron: '41 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published:
+    name: The site repository serves the latest doc-scanner-pdf
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout doc-scanner-pdf-code (all history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout the site repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: chatrawichai-envbr/chatrawichai-envbr.github.io
+          path: site
+          persist-credentials: false
+
+      - name: Published folder = publish-site.sh output, and up to date with main
+        run: |
+          set -euo pipefail
+          published="$(jq -r '.commit // empty' site/doc-scanner-pdf/version.json)"
+          [[ "$published" =~ ^[0-9a-f]{12}$ ]] || { echo "::error::site doc-scanner-pdf/version.json has no build commit"; exit 1; }
+          commit="$(git rev-parse --verify --quiet "${published}^{commit}")" || { echo "::error::published build ${published} is not a commit of doc-scanner-pdf-code"; exit 1; }
+          if ! git diff --quiet "$commit" HEAD -- doc-scanner-pdf; then
+            echo "::error::doc-scanner-pdf changed on main since the published build ${published} — publish it (see CLAUDE.md):"
+            git log --oneline "$commit..HEAD" -- doc-scanner-pdf
+            exit 1
+          fi
+          tools/publish-site.sh --commit "$commit" "$RUNNER_TEMP/expected"
+          if ! diff -r "$RUNNER_TEMP/expected" site/doc-scanner-pdf; then
+            echo "::error::the published folder is not tools/publish-site.sh's output for ${published}"
+            exit 1
+          fi
+          echo "chatrawichai-envbr/chatrawichai-envbr.github.io: doc-scanner-pdf/ is doc-scanner-pdf-code@${published}; doc-scanner-pdf unchanged on main since then"

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PDF check</title>
+<!-- Test helper: loads pdf.js (legacy build: works in the Playwright Chromium; from node_modules via the test server) to inspect PDFs made by the app -->
+<script type="module">
+  import * as pdfjs from '/__pdfjs/legacy/build/pdf.mjs';
+  pdfjs.GlobalWorkerOptions.workerSrc = '/__pdfjs/legacy/build/pdf.worker.mjs';
+
+  function fromB64(b64) {
+    const s = atob(b64);
+    const a = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+    return a;
+  }
+
+  /** Text items (in page fractions, origin top-left), render-mode ops and a rendered bitmap per page */
+  window.inspectPdf = async function (b64, { render = true, scale = 1 } = {}) {
+    const doc = await pdfjs.getDocument({ data: fromB64(b64), isEvalSupported: false }).promise;
+    const pages = [];
+    for (let n = 1; n <= doc.numPages; n++) {
+      const page = await doc.getPage(n);
+      const vp = page.getViewport({ scale: 1 });
+      const tc = await page.getTextContent();
+      const items = tc.items.filter(it => typeof it.str === 'string').map(it => ({
+        str: it.str,
+        x: it.transform[4] / vp.width,
+        y: 1 - it.transform[5] / vp.height,
+        w: it.width / vp.width,
+        h: it.height / vp.height,
+        font: tc.styles[it.fontName] ? tc.styles[it.fontName].fontFamily : ''
+      }));
+      const ops = await page.getOperatorList();
+      const modes = [];
+      let textOps = 0;
+      ops.fnArray.forEach((fn, i) => {
+        if (fn === pdfjs.OPS.setTextRenderingMode) modes.push(ops.argsArray[i][0]);
+        if (fn === pdfjs.OPS.showText || fn === pdfjs.OPS.showSpacedText) textOps++;
+      });
+      let pixels = null;
+      if (render) {
+        const rv = page.getViewport({ scale });
+        const c = document.createElement('canvas');
+        c.width = Math.round(rv.width); c.height = Math.round(rv.height);
+        await page.render({ canvas: c, canvasContext: c.getContext('2d'), viewport: rv }).promise;
+        pixels = { w: c.width, h: c.height, data: c.toDataURL('image/png') };
+      }
+      pages.push({ width: vp.width, height: vp.height, items, modes, textOps, pixels });
+    }
+    return { numPages: doc.numPages, pages };
+  };
+
+  /** Pixel difference between two PNG data URLs */
+  window.diffImages = async function (a, b) {
+    const load = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+    const [ia, ib] = await Promise.all([load(a), load(b)]);
+    if (ia.width !== ib.width || ia.height !== ib.height) return { sameSize: false, maxDiff: 255, diffPixels: 1 };
+    const get = img => { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0); return x.getImageData(0, 0, c.width, c.height).data; };
+    const da = get(ia), db = get(ib);
+    let maxDiff = 0, diffPixels = 0;
+    for (let i = 0; i < da.length; i += 4) {
+      const d = Math.max(Math.abs(da[i] - db[i]), Math.abs(da[i + 1] - db[i + 1]), Math.abs(da[i + 2] - db[i + 2]));
+      if (d > maxDiff) maxDiff = d;
+      if (d > 2) diffPixels++;
+    }
+    return { sameSize: true, maxDiff, diffPixels: diffPixels / (da.length / 4) };
+  };
+  window.pdfReady = true;
+</script>
+</head>
+<body></body>
+</html>
