@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ตรงกับสีพื้นหลังและสีหลักใน css/style.css -->
+    <color name="app_background">#FFF4F6FB</color>
+    <color name="brand">#FF1F5EFF</color>
+    <color name="icon_background">#FF1F5EFF</color>
+</resources>

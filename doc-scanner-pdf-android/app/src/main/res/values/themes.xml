@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ธีมสว่าง/มืดตามเครื่อง: WebView ส่งค่า prefers-color-scheme ตามธีมนี้ให้หน้าเว็บ -->
+    <style name="Theme.DocScanner" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:colorPrimary">@color/brand</item>
+        <item name="android:colorAccent">@color/brand</item>
+    </style>
+</resources>

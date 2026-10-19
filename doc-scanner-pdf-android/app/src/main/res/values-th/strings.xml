@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ข้อความภาษาไทย (เครื่องหรือหน้าเว็บตั้งภาษาไทย) — ภาษาอังกฤษอยู่ใน values/strings.xml -->
+<resources>
+    <string name="app_name">สแกนเอกสาร PDF</string>
+    <string name="webview_outdated">Android System WebView ในเครื่องนี้เก่าเกินไป — บันทึกและแชร์ไฟล์จะใช้ไม่ได้ กรุณาอัปเดต \"Android System WebView\" หรือ \"Chrome\" จาก Play Store</string>
+    <string name="ok">ตกลง</string>
+    <string name="camera_denied_picker">ไม่ได้รับสิทธิ์ใช้กล้อง — เลือกรูปจากเครื่องแทน</string>
+    <string name="no_camera_app">ไม่พบแอปกล้องในเครื่อง — เลือกรูปจากเครื่องแทน</string>
+    <string name="no_picker_app">ไม่พบแอปสำหรับเลือกรูปภาพ</string>
+    <string name="no_share_app">ไม่พบแอปที่แชร์ไฟล์นี้ได้</string>
+    <string name="share_title">แชร์ด้วย</string>
+    <string name="cannot_open_link">เปิดลิงก์ไม่ได้</string>
+    <string name="page_reloaded">หน่วยความจำไม่พอ แอปจึงเริ่มหน้าใหม่ — หน้าที่สแกนไว้หายไป</string>
+    <string name="save_busy">กำลังบันทึกไฟล์อื่นอยู่ — ลองอีกครั้งเมื่อเสร็จ</string>
+    <string name="save_failed">เขียนไฟล์ลงที่เก็บที่เลือกไม่ได้</string>
+    <string name="save_unavailable">ไม่พบหน้าต่างสำหรับเลือกที่เก็บไฟล์</string>
+    <string name="transfer_failed">รับไฟล์จากหน้าเว็บไม่สำเร็จ</string>
+</resources>

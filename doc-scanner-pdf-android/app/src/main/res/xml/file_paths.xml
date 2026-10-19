@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- เฉพาะโฟลเดอร์ชั่วคราวสองโฟลเดอร์นี้เท่านั้นที่ส่งให้แอปอื่นได้ -->
+    <cache-path name="camera" path="camera/" />
+    <cache-path name="share" path="share/" />
+</paths>

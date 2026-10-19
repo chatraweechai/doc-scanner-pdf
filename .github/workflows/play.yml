@@ -1,0 +1,184 @@
+# Google Play: store images, promo video and (when asked) the upload of the released app — run by hand only
+# (Actions → Google Play → Run workflow), see PLAY_STORE.md.
+#
+#   store   — the store images of both languages from the real app (tools/store/build.js: icon, feature graphic, phone and
+#             tablet screenshots, listing texts) and, when asked, the promo videos (tools/store/video.js) → artifact
+#             "store-listing"; needs no Google key, so it can run before the Play Console app exists
+#   upload  — only when "upload" is ticked, on main: the .aab of the GitHub Release of the chosen version (never a
+#             debug-signed one) and/or the listing go to Google Play with tools/play/publish.js. The service account key
+#             (secret PLAY_SERVICE_ACCOUNT_JSON) is given to that one step only.
+#
+# Actions are pinned to full commit SHAs for supply-chain safety.
+name: Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Upload to Google Play (off = only build the store images/video as an artifact)'
+        type: boolean
+        default: false
+      what:
+        description: 'What to upload'
+        type: choice
+        options: ['app and listing', 'app only', 'listing only']
+        default: 'app and listing'
+      track:
+        description: 'Track (internal = internal testing, alpha = closed testing, production)'
+        type: choice
+        options: [internal, alpha, beta, production]
+        default: internal
+      status:
+        description: 'Release status (draft for a new app: send it for review in Play Console)'
+        type: choice
+        options: [draft, completed]
+        default: draft
+      version:
+        description: 'App version of the GitHub Release (empty = the current version in CHANGELOG.md)'
+        type: string
+        default: ''
+      video:
+        description: 'Also make the promo videos (MP4, for YouTube)'
+        type: boolean
+        default: false
+      validate_only:
+        description: 'Only let Google check everything, commit nothing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: google-play
+  cancel-in-progress: false
+
+jobs:
+  store:
+    name: Store images and video (from the real app)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read source commit
+        id: src
+        run: |
+          commit="$(node -p "require('./doc-scanner-pdf-android/source.json').commit")"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid commit in source.json"; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout chatrawichai-envbr/doc-scanner-pdf-code at the source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: chatrawichai-envbr/doc-scanner-pdf-code
+          # the repository is public; a read-only deploy key is used only if it is made private again
+          ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
+          ref: ${{ steps.src.outputs.commit }}
+          path: code-src
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: tools/tests
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Store images (Thai + English)
+        env:
+          CLAUDE4CODE_SRC: ${{ github.workspace }}/code-src
+        run: node tools/store/build.js
+
+      - name: Promo videos (Thai + English)
+        if: inputs.video
+        env:
+          CLAUDE4CODE_SRC: ${{ github.workspace }}/code-src
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg > /dev/null
+          node tools/store/video.js
+
+      - name: Upload the store listing
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: store-listing
+          # only what goes to Google Play (not the raw captures and video frames under tools/store/out)
+          path: |
+            tools/store/out/th
+            tools/store/out/en-US
+          retention-days: 30
+          if-no-files-found: error
+
+  upload:
+    name: Upload to Google Play
+    needs: [store]
+    if: inputs.upload && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Key for Google Play
+        env:
+          HAS_KEY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+        run: |
+          [ "$HAS_KEY" = "true" ] || { echo "::error title=PLAY_SERVICE_ACCOUNT_JSON::add the JSON key of the Google Cloud service account that has access to the app in Play Console as the secret PLAY_SERVICE_ACCOUNT_JSON (see PLAY_STORE.md)"; exit 1; }
+
+      - name: Store listing of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" -n store-listing -D store-listing -R "$GITHUB_REPOSITORY"
+
+      - name: The app bundle of the GitHub Release, signed with the permanent key
+        if: inputs.what != 'listing only'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [ -n "$VERSION" ] || VERSION="$(node tools/release/version.js | jq -r .version)"
+          [[ "$VERSION" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad version '$VERSION'"; exit 1; }
+          aab="dist/doc-scanner-pdf-${VERSION}.aab"
+          gh release download "v${VERSION}" -p "doc-scanner-pdf-${VERSION}.aab" -D dist -R "$GITHUB_REPOSITORY"
+          [ -f "$aab" ] || { echo "::error::$aab is not in release v${VERSION}"; exit 1; }
+          certs="$("$JAVA_HOME_21_X64/bin/keytool" -printcert -jarfile "$aab" 2>&1)" || { echo "$certs"; echo "::error::cannot read the signature of $aab"; exit 1; }
+          grep -E '^(Signer|Owner|\s+SHA256)' <<<"$certs" || true
+          [ "$(grep -c '^Signer #' <<<"$certs")" = 1 ] || { echo "::error::expected exactly one signer"; exit 1; }
+          if grep -q 'CN=Android Debug' <<<"$certs"; then
+            echo "::error::the bundle is signed with the debug key; Google Play only gets bundles signed with the permanent (upload) key"; exit 1
+          fi
+          echo "AAB=$aab" >> "$GITHUB_ENV"
+
+      - name: Upload
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          WHAT: ${{ inputs.what }}
+          TRACK: ${{ inputs.track }}
+          STATUS: ${{ inputs.status }}
+          VALIDATE_ONLY: ${{ inputs.validate_only }}
+        run: |
+          set -euo pipefail
+          args=()
+          case "$WHAT" in
+            'app and listing') args=(--aab "$AAB" --track "$TRACK" --status "$STATUS" --listing store-listing) ;;
+            'app only') args=(--aab "$AAB" --track "$TRACK" --status "$STATUS" --listing store-listing --notes-only) ;;
+            'listing only') args=(--listing store-listing --listing-only) ;;
+            *) echo "::error::bad input what"; exit 1 ;;
+          esac
+          if [ "$VALIDATE_ONLY" = "true" ]; then args+=(--validate-only); fi
+          node tools/play/publish.js "${args[@]}"

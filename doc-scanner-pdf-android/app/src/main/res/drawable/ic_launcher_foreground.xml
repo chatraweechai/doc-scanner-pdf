@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ไอคอน: เอกสารในกรอบสแกน (พื้นที่ปลอดภัย 66dp กลางไอคอน 108dp) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- กระดาษ -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42,34h18l10,10v30a2,2 0,0 1,-2 2H42a2,2 0,0 1,-2 -2V36a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#FFB9CCFF"
+        android:pathData="M60,34v8a2,2 0,0 0,2 2h8z" />
+    <!-- บรรทัดข้อความ -->
+    <path
+        android:fillColor="#FF1F5EFF"
+        android:pathData="M45,52h20v3H45zM45,58h20v3H45zM45,64h14v3H45z" />
+    <!-- มุมกรอบสแกน -->
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M30,38v-8h8M78,38v-8h-8M30,70v8h8M78,70v8h-8" />
+</vector>

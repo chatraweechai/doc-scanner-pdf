@@ -1,0 +1,4 @@
+• English interface — follows your device language; switch with the globe button
+• Smooth animations across the app
+• PDF to JPG (Small / Standard / High) and PDF to Word with exact Thai text
+• Opens HEIC/HEIF photos
