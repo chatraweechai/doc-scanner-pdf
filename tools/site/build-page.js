@@ -135,7 +135,7 @@ function privacyPage() {
         และหายไปเมื่อลบข้อมูลแอปหรือถอนการติดตั้ง</li>
       <li><strong>เด็ก</strong> — แอปไม่ได้เก็บข้อมูลของผู้ใช้คนใด รวมถึงเด็ก</li>
       <li><strong>การเปลี่ยนแปลง</strong> — หากนโยบายนี้เปลี่ยน จะแก้ไขที่หน้านี้พร้อมวันที่มีผล</li>
-      <li><strong>ติดต่อ</strong> — ทางอีเมลของผู้พัฒนาที่แสดงในหน้าแอปบน Google Play หรือ <a href="https://github.com/chatrawichai-envbr">github.com/chatrawichai-envbr</a></li>
+      <li><strong>ติดต่อ</strong> — ทางอีเมลของผู้พัฒนาที่แสดงในหน้าแอปบน Google Play หรือ <a href="https://github.com/chatraweechai">github.com/chatraweechai</a></li>
     </ul>
 
     <h2 lang="en">Privacy policy</h2>
@@ -155,7 +155,7 @@ function privacyPage() {
       <li><strong>Children</strong> — the app does not collect data from anyone, including children.</li>
       <li><strong>Changes</strong> — if this policy changes, this page is updated with its effective date.</li>
       <li><strong>Contact</strong> — the developer email shown on the app's Google Play page, or
-        <a href="https://github.com/chatrawichai-envbr">github.com/chatrawichai-envbr</a>.</li>
+        <a href="https://github.com/chatraweechai">github.com/chatraweechai</a>.</li>
     </ul>
     </div>
   </main>

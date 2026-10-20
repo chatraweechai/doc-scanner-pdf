@@ -1,5 +1,5 @@
-# chatrawichai-envbr/doc-scanner-pdf-android (was chatrawichai-tech/claude4app) = the Android version of
-# chatrawichai-envbr/doc-scanner-pdf-code (was chatrawichai-tech/claude4code), folder doc-scanner-pdf.
+# chatraweechai/doc-scanner-pdf-android (was chatrawichai-tech/claude4app) = the Android version of
+# chatraweechai/doc-scanner-pdf-code (was chatrawichai-tech/claude4code), folder doc-scanner-pdf.
 #
 #   sync      — doc-scanner-pdf-android/ is exactly what tools/convert/build.js produces from the doc-scanner-pdf-code commit
 #               in source.json, and converting that repository's main branch would give the same app (also daily; a
@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   sync:
-    name: Consistency with chatrawichai-envbr/doc-scanner-pdf-code
+    name: Consistency with chatraweechai/doc-scanner-pdf-code
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -48,10 +48,10 @@ jobs:
           [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid commit in source.json"; exit 1; }
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout chatrawichai-envbr/doc-scanner-pdf-code (all history)
+      - name: Checkout chatraweechai/doc-scanner-pdf-code (all history)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: chatrawichai-envbr/doc-scanner-pdf-code
+          repository: chatraweechai/doc-scanner-pdf-code
           # the repository is public; a read-only deploy key is used only if it is made private again
           ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
           ref: ${{ steps.src.outputs.commit }}
@@ -70,11 +70,11 @@ jobs:
         run: |
           git -C code-src checkout -q origin/main
           if ! node tools/convert/build.js --source code-src --check --as-commit "$SRC"; then
-            echo "::error::doc-scanner-pdf-android is behind chatrawichai-envbr/doc-scanner-pdf-code — main changes the app since ${SRC:0:12}. Run tools/convert/build.js, test, add a CHANGELOG.md version and push."
+            echo "::error::doc-scanner-pdf-android is behind chatraweechai/doc-scanner-pdf-code — main changes the app since ${SRC:0:12}. Run tools/convert/build.js, test, add a CHANGELOG.md version and push."
             git -C code-src log --oneline "$SRC..origin/main" -- doc-scanner-pdf
             exit 1
           fi
-          echo "In sync with chatrawichai-envbr/doc-scanner-pdf-code main (same app as ${SRC:0:12})"
+          echo "In sync with chatraweechai/doc-scanner-pdf-code main (same app as ${SRC:0:12})"
 
   web:
     name: Page tests (WebView emulation, screen sizes, parity)
@@ -90,10 +90,10 @@ jobs:
         id: src
         run: echo "commit=$(node -p "require('./doc-scanner-pdf-android/source.json').commit")" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout chatrawichai-envbr/doc-scanner-pdf-code at the source commit
+      - name: Checkout chatraweechai/doc-scanner-pdf-code at the source commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: chatrawichai-envbr/doc-scanner-pdf-code
+          repository: chatraweechai/doc-scanner-pdf-code
           # the repository is public; a read-only deploy key is used only if it is made private again
           ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
           ref: ${{ steps.src.outputs.commit }}
@@ -370,7 +370,7 @@ jobs:
           if grep -q 'CN=Android Debug' <<<"$certs"; then echo "::error::the APK is signed with the debug key — not released"; exit 1; fi
           src="$(node -p "require('./doc-scanner-pdf-android/source.json').commit")"
           {
-            echo "แอป Android สแกนเอกสารเป็น PDF — แปลงจาก chatrawichai-envbr/doc-scanner-pdf-code@${src:0:12} (doc-scanner-pdf-android@${GITHUB_SHA:0:12})"
+            echo "แอป Android สแกนเอกสารเป็น PDF — แปลงจาก chatraweechai/doc-scanner-pdf-code@${src:0:12} (doc-scanner-pdf-android@${GITHUB_SHA:0:12})"
             echo
             echo "## มีอะไรใหม่"
             echo

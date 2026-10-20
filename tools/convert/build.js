@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * แปลงเว็บแอป doc-scanner-pdf (repo chatrawichai-envbr/doc-scanner-pdf-code เดิมคือ chatrawichai-tech/claude4code) เป็นไฟล์หน้าเว็บในแอป Android
+ * แปลงเว็บแอป doc-scanner-pdf (repo chatraweechai/doc-scanner-pdf-code เดิมคือ chatrawichai-tech/claude4code) เป็นไฟล์หน้าเว็บในแอป Android
  *
  *   node tools/convert/build.js --source ../doc-scanner-pdf-code            สร้าง/อัปเดตไฟล์ใน doc-scanner-pdf-android/
  *   node tools/convert/build.js --source ../doc-scanner-pdf-code --check    ตรวจว่าไฟล์ใน repo ตรงกับผลการแปลง (ใช้ใน CI)
@@ -27,7 +27,7 @@ const TEMPLATES = path.join(__dirname, 'templates');
 const PROJECT = 'doc-scanner-pdf-android';
 const WWW = 'app/src/main/assets/www';
 // ชื่อ repo ต้นทางที่บันทึกไว้ในแอป (android/platform.js, source.json) — ยังเป็นชื่อเดิมของ commit ที่แอปรุ่นปัจจุบันแปลงมา
-// repo นี้ย้ายมาเป็น chatrawichai-envbr/doc-scanner-pdf-code เมื่อ 2026-10-01: เปลี่ยนค่านี้เป็น 'chatrawichai-envbr/doc-scanner-pdf-code' พร้อมกับ
+// repo นี้ย้ายมาเป็น chatraweechai/doc-scanner-pdf-code เมื่อ 2026-10-01: เปลี่ยนค่านี้เป็น 'chatraweechai/doc-scanner-pdf-code' พร้อมกับ
 // การเปลี่ยนแอปจริงครั้งถัดไป (เปลี่ยนแค่ชื่อจะทำให้ไฟล์แอปต่างไปทั้งที่แอปไม่เปลี่ยน = รุ่นใหม่ปลอม — เจ้าของห้ามเด็ดขาด)
 const SOURCE_REPO = 'chatrawichai-tech/claude4code';
 const APP_DIR = 'doc-scanner-pdf';

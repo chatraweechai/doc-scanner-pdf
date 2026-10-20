@@ -71,10 +71,10 @@ jobs:
           [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid commit in source.json"; exit 1; }
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout chatrawichai-envbr/doc-scanner-pdf-code at the source commit
+      - name: Checkout chatraweechai/doc-scanner-pdf-code at the source commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: chatrawichai-envbr/doc-scanner-pdf-code
+          repository: chatraweechai/doc-scanner-pdf-code
           # the repository is public; a read-only deploy key is used only if it is made private again
           ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
           ref: ${{ steps.src.outputs.commit }}

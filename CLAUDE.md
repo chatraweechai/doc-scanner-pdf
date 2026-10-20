@@ -2,8 +2,8 @@
 
 ## Project
 
-This repository is `chatrawichai-envbr/doc-scanner-pdf-android`: the Android app (phones + tablets) of the doc-scanner-pdf web app
-from `chatrawichai-envbr/doc-scanner-pdf-code`. Until 2026-10-01 they were `chatrawichai-tech/claude4app` and
+This repository is `chatraweechai/doc-scanner-pdf-android`: the Android app (phones + tablets) of the doc-scanner-pdf web app
+from `chatraweechai/doc-scanner-pdf-code`. Until 2026-10-01 they were `chatrawichai-tech/claude4app` and
 `chatrawichai-tech/claude4code`; those repositories are gone and the owner restored all four into `chatrawichai-envbr`
 (Apps Script twin `chatrawichai-envbr/doc-scanner-pdf-gas`, web site `chatrawichai-envbr/chatrawichai-envbr.github.io`). Owner quotes below keep the
 names they used. Clone the repositories next to each other under their new names (`../doc-scanner-pdf-code`).
@@ -15,10 +15,10 @@ The package name `io.github.chatrawichaitech.docscanner` never changes (installe
   save (system "save as") and share through `DocScannerBridge` (WebMessageListener, protocol in `BridgeProtocol.kt`),
   back button, insets, render-process recovery.
 - `app/src/main/assets/www/` and `source.json` are **generated** by `tools/convert/build.js --source ../doc-scanner-pdf-code` —
-  never edit them by hand; change `chatrawichai-envbr/doc-scanner-pdf-code` (or `tools/convert/templates/platform.js`) and convert again.
+  never edit them by hand; change `chatraweechai/doc-scanner-pdf-code` (or `tools/convert/templates/platform.js`) and convert again.
   The app's JS/CSS must stay byte-identical to doc-scanner-pdf-code; platform differences go through `window.AppPlatform` hooks.
   `SOURCE_REPO` in `build.js` (embedded in `android/platform.js` and `source.json`) still records the old name of the
-  commit the current app was converted from: switch it to `chatrawichai-envbr/doc-scanner-pdf-code` together with the next real app
+  commit the current app was converted from: switch it to `chatraweechai/doc-scanner-pdf-code` together with the next real app
   change, never on its own (that would change the app files without changing the app — a fake version).
 - `doc-scanner-pdf-code` is public, so CI checks it out without credentials; every checkout of it passes the optional
   read-only deploy key `CLAUDE_REPO_KEY` (`ssh-key:`), used only if that repository is made private again.
@@ -50,9 +50,9 @@ The package name `io.github.chatrawichaitech.docscanner` never changes (installe
 
 ## Required workflow for every change
 
-Same rules as `chatrawichai-envbr/doc-scanner-pdf-code` (owner, 2026-09-27): verify for real, review for bugs and vulnerabilities,
+Same rules as `chatraweechai/doc-scanner-pdf-code` (owner, 2026-09-27): verify for real, review for bugs and vulnerabilities,
 fix, then commit and push `main`. The owner also asked (2026-09-27): *"ต่อไปเมื่อแก้ claude ต้องการให้แปลงและทดสอบใน
-claude4app ด้วยทุกครั้งเหมือน claude4gas"* (`claude` is now `chatrawichai-envbr/doc-scanner-pdf-code`, `claude4app` this repository,
+claude4app ด้วยทุกครั้งเหมือน claude4gas"* (`claude` is now `chatraweechai/doc-scanner-pdf-code`, `claude4app` this repository,
 `claude4gas` `chatrawichai-envbr/doc-scanner-pdf-gas`) — every change in doc-scanner-pdf-code is converted and tested here in the same
 session, after doc-scanner-pdf-code and doc-scanner-pdf-gas are pushed.
 

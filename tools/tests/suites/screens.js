@@ -56,13 +56,17 @@ run(async () => {
     await page.setInputFiles('#fileInput', ['photo-shadow.jpg', 'photo-tilted.jpg', 'photo-lightbg.jpg'].map(fixture));
     await page.waitForFunction(() => document.querySelectorAll('.page-item').length === 3, null, { timeout: 60000 });
     await waitIdle(page);
+    // motion.js slides pages in and FLIPs them when the list changes: measure and shoot the final layout
+    await page.waitForFunction(() => !document.getAnimations().some(a => a.playState === 'running' &&
+      a.effect && a.effect.target instanceof Element && a.effect.target.closest('.page-grid')), null, { timeout: 5000 });
     await page.evaluate(() => window.scrollTo(0, 0));
     let m = await measure(page, ['#btnCamera', '#btnPick', '#btnExport', '#btnOcrAll', '.page-item', '.page-grid']);
     if (m.overflowX > 1) problems.push(`home: sideways scroll ${m.overflowX}px`);
     for (const s of ['#btnCamera', '#btnPick']) if (!inX(m, m.items[s]) || !tappable(m.items[s])) problems.push(`home: ${s} ${JSON.stringify(m.items[s])}`);
     for (const s of ['#btnExport', '#btnOcrAll']) if (!onScreen(m, m.items[s]) || !tappable(m.items[s])) problems.push(`home: ${s} not on screen ${JSON.stringify(m.items[s])}`);
     const cols = await page.evaluate(() => {
-      const items = [...document.querySelectorAll('.page-item')].map(e => Math.round(e.getBoundingClientRect().top));
+      // offsetTop = the row in the layout (a transform of a still-running animation does not move it)
+      const items = [...document.querySelectorAll('.page-item')].map(e => e.offsetTop);
       return items.filter(y => y === items[0]).length;
     });
     if (size.tablet && cols < 3) problems.push(`home: tablet shows only ${cols} page(s) per row`);

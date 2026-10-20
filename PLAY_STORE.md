@@ -41,7 +41,7 @@
 
 ## 3. อัปโหลดไฟล์แอปครั้งแรก (ต้องทำใน Console เอง — API ใช้ได้หลังแอปมีไฟล์แรกแล้ว)
 
-1. ดาวน์โหลด `doc-scanner-pdf-1.0.N.aab` รุ่นล่าสุดจากหน้า [Releases](https://github.com/chatrawichai-envbr/doc-scanner-pdf-android/releases)
+1. ดาวน์โหลด `doc-scanner-pdf-1.0.N.aab` รุ่นล่าสุดจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf-android/releases)
    (ล็อกอิน GitHub) — ไฟล์ `.aab` ติดตั้งบนมือถือไม่ได้ ใช้อัปโหลดขึ้น Play เท่านั้น
 2. **Test and release → Testing → Internal testing → Create new release**
 3. **App signing** — กด **Choose signing key → Use Google-generated key** (แนะนำ: Google เก็บกุญแจเซ็นแอปที่ส่งถึงผู้ใช้,
@@ -75,7 +75,7 @@
 
 - **Store settings**: App category = **Productivity** · Tags: Scanner, PDF, Document · Contact details: อีเมลติดต่อ (บังคับ, แสดงบนหน้าร้าน)
   · Website ใส่ `https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/` ได้
-- **Main store listing**: ตั้ง service account (ขั้นที่ 6–7) แล้วรัน workflow แบบ *listing only* — ข้อความ ไอคอน ภาพกราฟิกเด่น
+- **Main store listing** (เมนู Grow users → Store presence → Store listings หรือพิมพ์ `store listing` ในช่องค้นหาของ Play Console): ตั้ง service account (ขั้นที่ 6–7) แล้วรัน workflow แบบ *listing only* — ข้อความ ไอคอน ภาพกราฟิกเด่น
   ภาพหน้าจอ ทั้งไทยและอังกฤษ ถูกใส่ให้ครบ หรือดาวน์โหลด artifact `store-listing` แล้วอัปโหลดเองใน Console ก็ได้
 - **วิดีโอโปรโมต**: อัปโหลด `promo.mp4` ของแต่ละภาษา (artifact `store-listing`, โฟลเดอร์ `th/` และ `en-US/`) ขึ้น YouTube
   แบบ **Public หรือ Unlisted**, ปิดโฆษณา, ไม่จำกัดอายุ แล้วส่งลิงก์ YouTube มา — จะใส่ใน `tools/store/listing/<ภาษา>/video_url.txt`
@@ -91,6 +91,12 @@
    (`play-upload@<โปรเจกต์>.iam.gserviceaccount.com`) → แท็บ **App permissions → Add app** เลือกแอปนี้ แล้วติ๊ก:
    *View app information*, *Release to production, exclude devices, and use Play App Signing*, *Release apps to testing tracks*,
    *Manage testing tracks and edit tester lists*, *Manage store presence* → **Invite user** (ไม่ต้องให้สิทธิ์ระดับบัญชี/การเงิน)
+
+**ถ้า workflow แจ้ง `403 PERMISSION_DENIED: The caller does not have permission`** (หลัง "signed in with the service account key")
+แปลว่า Google รับกุญแจแล้วแต่ service account ยังไม่มีสิทธิ์ในแอป: ตรวจว่าอีเมลของ service account อยู่ใน **Users and permissions**
+(ถ้าไม่มี = ยังไม่ได้ทำข้อ 5) และเป็นอีเมลเดียวกับ `client_email` ในไฟล์ `.json` ของ secret · สิทธิ์ใหม่อาจใช้เวลาถึง 24 ชั่วโมงกว่าจะมีผล —
+แก้ข้อความหน้าร้านเล็กน้อยแล้วบันทึก (เช่น Short description) มักทำให้มีผลทันที (2026-10-02: ทันทีหลังเชิญยังได้ 403 —
+แก้ Short description แล้วรอบถัดไปผ่าน ราว 15 นาทีหลังเชิญ)
 
 ## 7. ใส่กุญแจเป็น GitHub secret (ครั้งเดียว)
 

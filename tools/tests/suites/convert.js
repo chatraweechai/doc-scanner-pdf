@@ -137,16 +137,16 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   workflow.includes("RELEASE_BUILD: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}") &&
   secretLines.filter(l => gatedSecret.test(l)).length === 4 && secretLines.every(l => gatedSecret.test(l) || presenceOnly.test(l)),
   secretLines.filter(l => !gatedSecret.test(l) && !presenceOnly.test(l)).join(' | '));
-// chatrawichai-envbr/doc-scanner-pdf-code (เดิม chatrawichai-tech/claude4code) เป็น public: ทุกขั้นตอนที่ดึงโค้ดจาก repo นั้นส่ง deploy key
+// chatraweechai/doc-scanner-pdf-code (เดิม chatrawichai-tech/claude4code) เป็น public: ทุกขั้นตอนที่ดึงโค้ดจาก repo นั้นส่ง deploy key
 // แบบอ่านอย่างเดียว (secret CLAUDE_REPO_KEY — ใช้เมื่อ repo ถูกเปลี่ยนเป็น private เท่านั้น) และไม่เก็บข้อมูลล็อกอิน; workflow ไม่อ้างถึง repo
 // เดิมของ chatrawichai-tech ที่ใช้ไม่ได้แล้ว
 {
   for (const name of ['android.yml', 'play.yml']) {
     const wf = fs.readFileSync(path.join(ROOT, '.github/workflows', name), 'utf8');
-    const steps = wf.split(/\n(?=\s+- name: )/).filter(s => /^\s+repository: chatrawichai-envbr\/doc-scanner-pdf-code\s*$/m.test(s));
+    const steps = wf.split(/\n(?=\s+- name: )/).filter(s => /^\s+repository: chatraweechai\/doc-scanner-pdf-code\s*$/m.test(s));
     const withKey = steps.filter(s => /^\s+ssh-key: \$\{\{ secrets\.CLAUDE_REPO_KEY \}\}/m.test(s) && /^\s+persist-credentials: false\s*$/m.test(s));
     const body = wf.slice(wf.indexOf('\nname:'));
-    t.check(`${name}: every checkout of chatrawichai-envbr/doc-scanner-pdf-code passes the optional read-only deploy key (CLAUDE_REPO_KEY), not persisted; no removed repository names`,
+    t.check(`${name}: every checkout of chatraweechai/doc-scanner-pdf-code passes the optional read-only deploy key (CLAUDE_REPO_KEY), not persisted; no removed repository names`,
       steps.length >= (name === 'android.yml' ? 2 : 1) && withKey.length === steps.length && !/chatrawichai-tech|claude4code|claude4app|claude4gas/.test(body),
       `${withKey.length}/${steps.length} checkouts`);
   }

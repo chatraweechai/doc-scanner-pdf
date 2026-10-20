@@ -9,7 +9,7 @@
  * (the app has no INTERNET permission), and DocScannerBridge is emulated in Node with the same protocol checks as
  * BridgeProtocol.kt / TransferStore.kt. The real app is tested on Android emulators (androidTest, CI).
  *
- * CLAUDE4CODE_SRC (default ../doc-scanner-pdf-code next to this repo) = checkout of chatrawichai-envbr/doc-scanner-pdf-code at the commit in
+ * CLAUDE4CODE_SRC (default ../doc-scanner-pdf-code next to this repo) = checkout of chatraweechai/doc-scanner-pdf-code at the commit in
  * doc-scanner-pdf-android/source.json: source of the conversion, the web version (parity) and the test fixtures.
  */
 const fs = require('fs');
@@ -29,7 +29,7 @@ const PDFJS = path.join(__dirname, '../node_modules/pdfjs-dist');
 const OUT = path.join(__dirname, '../out');
 fs.mkdirSync(OUT, { recursive: true });
 if (!fs.existsSync(path.join(WEB_APP, 'index.html'))) {
-  console.error('ไม่พบ repo doc-scanner-pdf-code ที่ ' + CLAUDE4CODE_SRC + ' — ตั้งค่า CLAUDE4CODE_SRC ให้ชี้ไปที่ checkout ของ chatrawichai-envbr/doc-scanner-pdf-code');
+  console.error('ไม่พบ repo doc-scanner-pdf-code ที่ ' + CLAUDE4CODE_SRC + ' — ตั้งค่า CLAUDE4CODE_SRC ให้ชี้ไปที่ checkout ของ chatraweechai/doc-scanner-pdf-code');
   process.exit(2);
 }
 const SOURCE = JSON.parse(fs.readFileSync(path.join(PROJECT_DIR, 'source.json'), 'utf8'));

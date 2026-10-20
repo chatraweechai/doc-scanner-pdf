@@ -2,11 +2,11 @@
 
 แอป Android (มือถือและแท็บเล็ต) ที่แปลงภาพถ่ายเอกสารเป็นไฟล์ PDF: ครอปอัตโนมัติตามขอบกระดาษหรือครอปเองอิสระ,
 ปรับแสง, ลบเงา, โหมดสีสดคมชัด/ขาวดำตัวอักษรคม, แปลงภาพเป็นข้อความ (OCR ไทย + อังกฤษ) และ PDF ที่ค้นหาข้อความได้
-— แปลงอัตโนมัติจากเว็บแอป [`chatrawichai-envbr/doc-scanner-pdf-code`](https://github.com/chatrawichai-envbr/doc-scanner-pdf-code) (โฟลเดอร์ `doc-scanner-pdf`)
+— แปลงอัตโนมัติจากเว็บแอป [`chatraweechai/doc-scanner-pdf-code`](https://github.com/chatraweechai/doc-scanner-pdf-code) (โฟลเดอร์ `doc-scanner-pdf`)
 โดยโค้ดของแอปเหมือนเวอร์ชันเว็บทุกไบต์
 
-repo นี้คือ `chatrawichai-envbr/doc-scanner-pdf-android` — กู้คืนเมื่อ 2026-10-01 จาก `chatrawichai-tech/claude4app` (บัญชีเดิมใช้ไม่ได้แล้ว);
-repo ต้นทาง `claude4code` เป็น `chatrawichai-envbr/doc-scanner-pdf-code` และเว็บไซต์เป็น `chatrawichai-envbr/chatrawichai-envbr.github.io`
+repo นี้คือ `chatraweechai/doc-scanner-pdf-android` — กู้คืนเมื่อ 2026-10-01 จาก `chatrawichai-tech/claude4app` (บัญชีเดิมใช้ไม่ได้แล้ว);
+repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น `chatrawichai-envbr/chatrawichai-envbr.github.io`
 
 - ทำงานในเครื่องทั้งหมด **ไม่ต้องใช้อินเทอร์เน็ต** (แอปไม่ขอสิทธิ์อินเทอร์เน็ตเลย) — ภาพเอกสารไม่ถูกส่งไปที่ใด
 - **กล้องในแอป** ถ่ายหลายหน้าต่อเนื่องพร้อมกรอบตรวจจับเอกสารแบบสด หรือใช้ **กล้องของเครื่อง** / **เลือกรูปภาพ**
@@ -23,7 +23,7 @@ repo ต้นทาง `claude4code` เป็น `chatrawichai-envbr/doc-scann
 
 1. เปิดหน้า **https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
    แล้วกดดาวน์โหลด `doc-scanner-pdf-1.0.<เลข>.apk` — หน้านี้มีเฉพาะรุ่นล่าสุดที่เซ็นด้วยกุญแจถาวร พร้อมรายการ "มีอะไรใหม่"
-   (หรือจากหน้า [Releases](https://github.com/chatrawichai-envbr/doc-scanner-pdf-android/releases) ของ repo นี้)
+   (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf-android/releases) ของ repo นี้)
 2. เปิดไฟล์ที่ดาวน์โหลด — ครั้งแรก Android จะให้อนุญาต "ติดตั้งแอปที่ไม่รู้จัก" ให้เบราว์เซอร์ที่ใช้ดาวน์โหลด
 3. เปิดแอป **สแกนเอกสาร PDF** — ครั้งแรกที่ใช้กล้องในแอป Android จะถามสิทธิ์กล้อง
 
@@ -62,7 +62,7 @@ CI ส่ง secrets เหล่านี้ให้เฉพาะขั้�
 
 ## การเข้าถึง repo doc-scanner-pdf-code จาก CI
 
-repo ต้นทาง `chatrawichai-envbr/doc-scanner-pdf-code` (เดิม `chatrawichai-tech/claude4code`) เป็น public — CI อ่านโค้ดต้นทางได้โดยไม่ต้องตั้งค่าอะไร
+repo ต้นทาง `chatraweechai/doc-scanner-pdf-code` (เดิม `chatrawichai-tech/claude4code`) เป็น public — CI อ่านโค้ดต้นทางได้โดยไม่ต้องตั้งค่าอะไร
 ถ้าภายหลังเปลี่ยน repo นั้นเป็น private ให้สร้าง deploy key แบบอ่านอย่างเดียวและใส่เป็น secret `CLAUDE_REPO_KEY` ของ repo นี้
 (ขั้นตอนเดียวกับใน README ของ repo `doc-scanner-pdf-gas` หัวข้อ "การเข้าถึง repo doc-scanner-pdf-code จาก CI") — CI ใช้กุญแจนั้นเมื่อมีเท่านั้น
 
@@ -137,7 +137,7 @@ node tools/store/video.js            # tools/store/out/<th|en-US>/promo.mp4 (ต
 ## อัปเดตตาม repo doc-scanner-pdf-code
 
 ```bash
-git clone https://github.com/chatrawichai-envbr/doc-scanner-pdf-code ../doc-scanner-pdf-code     # ถ้ายังไม่มี
+git clone https://github.com/chatraweechai/doc-scanner-pdf-code ../doc-scanner-pdf-code     # ถ้ายังไม่มี
 node tools/convert/build.js --source ../doc-scanner-pdf-code                      # แปลงใหม่ (repo ต้นทางต้อง commit แล้ว)
 cd tools/tests && npm ci --ignore-scripts && npx playwright install chromium && node run-all.js
 cd ../../doc-scanner-pdf-android && ./gradlew lintDebug testDebugUnitTest assembleDebug
