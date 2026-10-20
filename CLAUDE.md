@@ -4,8 +4,9 @@
 
 This repository is `chatraweechai/doc-scanner-pdf-android`: the Android app (phones + tablets) of the doc-scanner-pdf web app
 from `chatraweechai/doc-scanner-pdf-code`. Until 2026-10-01 they were `chatrawichai-tech/claude4app` and
-`chatrawichai-tech/claude4code`; those repositories are gone and the owner restored all four into `chatrawichai-envbr`
-(Apps Script twin `chatrawichai-envbr/doc-scanner-pdf-gas`, web site `chatrawichai-envbr/chatrawichai-envbr.github.io`). Owner quotes below keep the
+`chatrawichai-tech/claude4code`; those repositories are gone and the owner restored them into `chatraweechai`
+(web site `doc-scanner-pdf/doc-scanner-pdf.github.io`). Only doc-scanner-pdf-code, doc-scanner-pdf-android and the web site are linked
+(owner, 2026-10-02) — no other repository is touched or mentioned. Owner quotes below keep the
 names they used. Clone the repositories next to each other under their new names (`../doc-scanner-pdf-code`).
 The package name `io.github.chatrawichaitech.docscanner` never changes (installed apps and Google Play depend on it).
 
@@ -26,8 +27,8 @@ The package name `io.github.chatrawichaitech.docscanner` never changes (installe
   instructions instead of publishing a temporary-key APK (checked by the convert suite).
 - After the Release, the `site` job pushes the same APK (refused unless signed with the permanent key) and its download
   page (`tools/site/build-page.js`, relative links only — the site is the account's GitHub Pages user site; the pages also work from a sub-folder)
-  to `chatrawichai-envbr/chatrawichai-envbr.github.io`, folder `doc-scanner-pdf-android/`
-  → https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/, with the write deploy key in the secret
+  to `doc-scanner-pdf/doc-scanner-pdf.github.io`, folder `android/`
+  → https://doc-scanner-pdf.github.io/android/, with the write deploy key in the secret
   `SITE_DEPLOY_KEY` (README: หน้าดาวน์โหลดบนเว็บไซต์). Only that job may use it (checked by the convert suite).
 - `CHANGELOG.md` — **its top heading is the app version** (`## v1.0.N — date`): Gradle versionName/versionCode
   (major×1,000,000 + minor×1,000 + patch), the page's "เวอร์ชัน v1.0.N (Android)" (user agent → `AppPlatform.versionLabel`),
@@ -51,14 +52,13 @@ The package name `io.github.chatrawichaitech.docscanner` never changes (installe
 ## Required workflow for every change
 
 Same rules as `chatraweechai/doc-scanner-pdf-code` (owner, 2026-09-27): verify for real, review for bugs and vulnerabilities,
-fix, then commit and push `main`. The owner also asked (2026-09-27): *"ต่อไปเมื่อแก้ claude ต้องการให้แปลงและทดสอบใน
-claude4app ด้วยทุกครั้งเหมือน claude4gas"* (`claude` is now `chatraweechai/doc-scanner-pdf-code`, `claude4app` this repository,
-`claude4gas` `chatrawichai-envbr/doc-scanner-pdf-gas`) — every change in doc-scanner-pdf-code is converted and tested here in the same
-session, after doc-scanner-pdf-code and doc-scanner-pdf-gas are pushed.
+fix, then commit and push `main`. The owner also asked (2026-09-27) that every change in `claude` (now
+`chatraweechai/doc-scanner-pdf-code`) is converted and tested in `claude4app` (this repository) in the same
+session, after doc-scanner-pdf-code is pushed.
 
-The owner asked (2026-09-28): *"ต่อไปนี้หากการเปลี่ยนแปลง claude4code ไม่ได้มีความแตกต่างจากเดิม แต่ยังสอดคล้องกันอยู่
-ไม่ต้องแก้ไข claude4gas และ claude4app เพื่อไม่ให้เกิดการสร้าง deploy / release ซ้ำของเดิม หรือเกิดเวอร์ชั่นใหม่ปลอม
-(เวอร์ชั่นเก่า แค่เปลี่ยนเลขใหม่) เด็ดขาด"* and *"ต่อไปนี้ให้ทำ changelogs กำกับไว้ด้วย"*, and that the version shown when
+The owner asked (2026-09-28): _"ต่อไปนี้หากการเปลี่ยนแปลง claude4code ไม่ได้มีความแตกต่างจากเดิม แต่ยังสอดคล้องกันอยู่
+ไม่ต้องแก้ไข claude4app เพื่อไม่ให้เกิดการสร้าง deploy / release ซ้ำของเดิม หรือเกิดเวอร์ชั่นใหม่ปลอม
+(เวอร์ชั่นเก่า แค่เปลี่ยนเลขใหม่) เด็ดขาด"_ and _"ต่อไปนี้ให้ทำ changelogs กำกับไว้ด้วย"_, and that the version shown when
 the app opens is the release `v` number without "เปิดเมื่อ".
 
 0. First check whether the doc-scanner-pdf-code change reaches the app:
@@ -90,4 +90,4 @@ the app opens is the release `v` number without "เปิดเมื่อ".
 - Actions pinned to commit SHAs; Gradle wrapper = official Gradle (checksums verified in CI and `convert` suite —
   update the table there when upgrading Gradle).
 - Commit messages: imperative summary, body with what and why.
-- Reply to the owner in Thai only (owner, 2026-10-01: *"ขอข้อความภาษาไทยเท่านั้น"*).
+- Reply to the owner in Thai only (owner, 2026-10-01: _"ขอข้อความภาษาไทยเท่านั้น"_).

@@ -6,7 +6,7 @@
 โดยโค้ดของแอปเหมือนเวอร์ชันเว็บทุกไบต์
 
 repo นี้คือ `chatraweechai/doc-scanner-pdf-android` — กู้คืนเมื่อ 2026-10-01 จาก `chatrawichai-tech/claude4app` (บัญชีเดิมใช้ไม่ได้แล้ว);
-repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น `chatrawichai-envbr/chatrawichai-envbr.github.io`
+repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น `doc-scanner-pdf/doc-scanner-pdf.github.io`
 
 - ทำงานในเครื่องทั้งหมด **ไม่ต้องใช้อินเทอร์เน็ต** (แอปไม่ขอสิทธิ์อินเทอร์เน็ตเลย) — ภาพเอกสารไม่ถูกส่งไปที่ใด
 - **กล้องในแอป** ถ่ายหลายหน้าต่อเนื่องพร้อมกรอบตรวจจับเอกสารแบบสด หรือใช้ **กล้องของเครื่อง** / **เลือกรูปภาพ**
@@ -21,7 +21,7 @@ repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pd
 
 ## ติดตั้งและอัปเดต
 
-1. เปิดหน้า **https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
+1. เปิดหน้า **https://doc-scanner-pdf.github.io/android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
    แล้วกดดาวน์โหลด `doc-scanner-pdf-1.0.<เลข>.apk` — หน้านี้มีเฉพาะรุ่นล่าสุดที่เซ็นด้วยกุญแจถาวร พร้อมรายการ "มีอะไรใหม่"
    (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf-android/releases) ของ repo นี้)
 2. เปิดไฟล์ที่ดาวน์โหลด — ครั้งแรก Android จะให้อนุญาต "ติดตั้งแอปที่ไม่รู้จัก" ให้เบราว์เซอร์ที่ใช้ดาวน์โหลด
@@ -50,12 +50,12 @@ base64 -w0 doc-scanner-release.jks > keystore.b64     # macOS: base64 -i doc-sca
 
 แล้วเพิ่ม **Repository secrets** 4 รายการที่ Settings → Secrets and variables → Actions → Secrets ของ repo นี้:
 
-| ชื่อ | ค่า |
-|---|---|
-| `ANDROID_KEYSTORE_BASE64` | เนื้อหาไฟล์ `keystore.b64` |
-| `ANDROID_KEYSTORE_PASSWORD` | รหัสผ่านของ keystore |
-| `ANDROID_KEY_ALIAS` | `docscanner` (หรือ alias ที่ตั้ง) |
-| `ANDROID_KEY_PASSWORD` | รหัสผ่านของกุญแจ (ถ้าไม่ได้ตั้งแยก ใช้รหัสเดียวกับ keystore) |
+| ชื่อ                        | ค่า                                                          |
+| --------------------------- | ------------------------------------------------------------ |
+| `ANDROID_KEYSTORE_BASE64`   | เนื้อหาไฟล์ `keystore.b64`                                   |
+| `ANDROID_KEYSTORE_PASSWORD` | รหัสผ่านของ keystore                                         |
+| `ANDROID_KEY_ALIAS`         | `docscanner` (หรือ alias ที่ตั้ง)                            |
+| `ANDROID_KEY_PASSWORD`      | รหัสผ่านของกุญแจ (ถ้าไม่ได้ตั้งแยก ใช้รหัสเดียวกับ keystore) |
 
 CI ส่ง secrets เหล่านี้ให้เฉพาะขั้นตอน build ของ `main` ที่จะออก Release (push หรือ Run workflow) และลบไฟล์กุญแจทันทีหลังใช้
 — build ของ branch อื่น, pull request และรอบตรวจรายวันไม่ได้รับกุญแจ (APK ของรอบเหล่านั้นเซ็นด้วยกุญแจ debug)
@@ -64,13 +64,13 @@ CI ส่ง secrets เหล่านี้ให้เฉพาะขั้�
 
 repo ต้นทาง `chatraweechai/doc-scanner-pdf-code` (เดิม `chatrawichai-tech/claude4code`) เป็น public — CI อ่านโค้ดต้นทางได้โดยไม่ต้องตั้งค่าอะไร
 ถ้าภายหลังเปลี่ยน repo นั้นเป็น private ให้สร้าง deploy key แบบอ่านอย่างเดียวและใส่เป็น secret `CLAUDE_REPO_KEY` ของ repo นี้
-(ขั้นตอนเดียวกับใน README ของ repo `doc-scanner-pdf-gas` หัวข้อ "การเข้าถึง repo doc-scanner-pdf-code จาก CI") — CI ใช้กุญแจนั้นเมื่อมีเท่านั้น
+— CI ใช้กุญแจนั้นเมื่อมีเท่านั้น
 
 ## หน้าดาวน์โหลดบนเว็บไซต์ (ทำครั้งเดียว — สำหรับเจ้าของ repo)
 
-หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `chatrawichai-envbr/chatrawichai-envbr.github.io`
-(เดิม `chatrawichai-tech/chatrawichai-tech.github.io`) โฟลเดอร์ `doc-scanner-pdf-android/`
-→ https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/
+หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `doc-scanner-pdf/doc-scanner-pdf.github.io`
+(เดิม `chatrawichai-tech/chatrawichai-tech.github.io`) โฟลเดอร์ `android/`
+→ https://doc-scanner-pdf.github.io/android/
 (`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์, APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`,
 `version.json` พร้อม SHA-256 และลายนิ้วมือใบรับรอง) — งานนี้ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว
 
@@ -115,7 +115,7 @@ doc-scanner-pdf-android/                 โปรเจกต์ Android (เ�
   source.json                            commit ต้นทางใน repo doc-scanner-pdf-code + SHA-256 ของทุกไฟล์ต้นทาง
 tools/convert/build.js                   ตัวแปลง doc-scanner-pdf-code → Android (templates/platform.js = AppPlatform ของ Android)
 tools/tests/                             ทดสอบหน้าเว็บของแอปใน Chromium: convert, webview, screens, parity, play
-tools/site/build-page.js                 หน้าดาวน์โหลด APK + นโยบายความเป็นส่วนตัว (privacy.html) บน chatrawichai-envbr.github.io/doc-scanner-pdf-android/
+tools/site/build-page.js                 หน้าดาวน์โหลด APK + นโยบายความเป็นส่วนตัว (privacy.html) บน doc-scanner-pdf.github.io/android/
 tools/store/                             หน้าร้าน Google Play: ข้อความไทย/อังกฤษ (listing/), รูปหน้าร้าน (build.js), วิดีโอโปรโมต (video.js)
 tools/play/publish.js                    อัปโหลดแอป + หน้าร้านขึ้น Google Play (Android Publisher API)
 tools/ci/                                สคริปต์ของ CI (ตรวจ Gradle wrapper, เปิด emulator)
@@ -152,6 +152,7 @@ cd ../../doc-scanner-pdf-android && ./gradlew lintDebug testDebugUnitTest assemb
 แล้วออก Release และหน้าดาวน์โหลดรุ่นใหม่ให้อัตโนมัติ
 
 **เลขรุ่น (versionName/versionCode) มาจากหัวข้อบนสุดของ CHANGELOG.md** (`tools/release/version.js`):
+
 - แอปเปลี่ยน + มีรุ่นใหม่ → ออก Release (versionCode = major×1,000,000 + minor×1,000 + patch)
 - แก้แค่ CI/ชุดทดสอบ/เอกสาร → ไม่ออกรุ่นใหม่ (ไม่มี Release ซ้ำของเดิม)
 - แอปเปลี่ยนแต่ไม่เพิ่มรุ่นใหม่ หรือเพิ่มรุ่นใหม่แต่แอปไม่เปลี่ยน (รุ่นปลอม) → CI ไม่ผ่านตั้งแต่ขั้น build

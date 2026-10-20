@@ -159,10 +159,10 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     gate > 0 && create > gate && /if \[ "\$HAS_KEY" != "true" \]; then[\s\S]*?exit 1\n\s+fi/.test(job.slice(gate, create)) &&
     job.indexOf("grep -q 'CN=Android Debug'") > gate && job.indexOf("grep -q 'CN=Android Debug'") < create && !job.includes('กุญแจชั่วคราวของเครื่อง build'));
 }
-// หน้าดาวน์โหลดสาธารณะ (tools/site/build-page.js → chatrawichai-envbr/chatrawichai-envbr.github.io, https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/)
+// หน้าดาวน์โหลดสาธารณะ (tools/site/build-page.js → doc-scanner-pdf/doc-scanner-pdf.github.io, https://doc-scanner-pdf.github.io/android/)
 {
   const { build: buildPage } = require('../../site/build-page');
-  const site = path.join(OUT, 'site', 'doc-scanner-pdf-android');
+  const site = path.join(OUT, 'site', 'android');
   fs.rmSync(path.dirname(site), { recursive: true, force: true });
   const fakeApk = n => { const f = path.join(OUT, `fake-${n}.apk`); const b = Buffer.alloc(4096 + n, n); b.writeUInt32LE(0x04034b50, 0); fs.writeFileSync(f, b); return f; };
   const base = { out: site, cert: 'ab'.repeat(32), source: 'c'.repeat(40), app: 'd'.repeat(40), published: '2026-09-28T04:25:48Z' };

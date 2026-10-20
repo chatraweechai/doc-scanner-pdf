@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
 /*
- * Builds the public download page of the Android app for the site repository chatrawichai-envbr/chatrawichai-envbr.github.io
+ * Builds the public download page of the Android app for the site repository doc-scanner-pdf/doc-scanner-pdf.github.io
  * (GitHub Pages user site; every link is relative, so the pages also work from a sub-folder):
- *   https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/   (index.html + the signed APK + version.json)
+ *   https://doc-scanner-pdf.github.io/android/   (index.html + the signed APK + version.json)
  * The release job of .github/workflows/android.yml runs it with the signed release APK after every test passed.
  *
- *   node tools/site/build-page.js --apk <file.apk> --out <site>/doc-scanner-pdf-android --version 1.0.N
+ *   node tools/site/build-page.js --apk <file.apk> --out <site>/android --version 1.0.N
  *        --cert <signing certificate SHA-256, 64 hex> --source <doc-scanner-pdf-code commit> --app <doc-scanner-pdf-android commit>
  *        [--notes <changelog of this version, markdown list>] [--published <ISO time>]
  *
@@ -14,40 +14,63 @@
  * Google Play listing links it), version.json and doc-scanner-pdf-<version>.apk.
  * No scripts on the page, strict CSP, styles from the site's site.css (../site.css).
  */
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
-const FOLDER = 'doc-scanner-pdf-android';
+const FOLDER = "android";
 const MAX_APK = 95 * 1024 * 1024; // GitHub refuses files over 100 MB
 
-function fail(msg) { throw new Error('build-page: ' + msg); }
+function fail(msg) {
+  throw new Error("build-page: " + msg);
+}
 
 function args(argv) {
   const out = {};
   for (let i = 0; i < argv.length; i += 2) {
     const k = argv[i];
-    if (!/^--(apk|out|version|cert|source|app|notes|published)$/.test(k) || argv[i + 1] === undefined) fail('bad argument ' + k);
+    if (
+      !/^--(apk|out|version|cert|source|app|notes|published)$/.test(k) ||
+      argv[i + 1] === undefined
+    )
+      fail("bad argument " + k);
     out[k.slice(2)] = argv[i + 1];
   }
   return out;
 }
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fingerprint = hex => hex.toUpperCase().match(/../g).join(':');
-const mb = n => (n / 1048576).toFixed(1);
+const esc = (s) =>
+  String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const fingerprint = (hex) => hex.toUpperCase().match(/../g).join(":");
+const mb = (n) => (n / 1048576).toFixed(1);
 
 /** รายการการเปลี่ยนแปลงของรุ่นนี้ (จาก CHANGELOG.md) → ข้อความล้วนทีละข้อ (ไม่แปลง markdown เป็น HTML) */
 function notesList(md) {
   const items = [];
   let open = false; // บรรทัดต่อของข้อเดิม (ย่อหน้าต่อกันโดยไม่มีบรรทัดว่างคั่น)
-  for (const line of String(md || '').split('\n')) {
+  for (const line of String(md || "").split("\n")) {
     const m = /^\s*[-*]\s+(.*)$/.exec(line);
-    if (m) { items.push(m[1]); open = true; }
-    else if (!line.trim()) open = false;
-    else if (open) items[items.length - 1] += ' ' + line.trim();
+    if (m) {
+      items.push(m[1]);
+      open = true;
+    } else if (!line.trim()) open = false;
+    else if (open) items[items.length - 1] += " " + line.trim();
   }
-  return items.map(t => t.replace(/\*\*|`/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 30);
+  return items
+    .map((t) =>
+      t
+        .replace(/\*\*|`/g, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean)
+    .slice(0, 30);
 }
 
 function page(v) {
@@ -83,12 +106,16 @@ function page(v) {
       <li>เปิดแอป <strong>สแกนเอกสาร PDF</strong> — ครั้งแรกที่ใช้กล้องในแอป Android จะถามสิทธิ์กล้อง</li>
     </ol>
     <p><strong>อัปเดต:</strong> ดาวน์โหลดรุ่นใหม่จากหน้านี้แล้วติดตั้งทับได้เลย (ทุกรุ่นเซ็นด้วยกุญแจเดียวกัน)</p>
-${v.notes.length ? `
+${
+  v.notes.length
+    ? `
     <h2>มีอะไรใหม่ในรุ่น ${esc(v.version)}</h2>
     <ul>
-${v.notes.map(n => `      <li>${esc(n)}</li>`).join('\n')}
+${v.notes.map((n) => `      <li>${esc(n)}</li>`).join("\n")}
     </ul>
-` : ''}
+`
+    : ""
+}
     <h2>ความปลอดภัย</h2>
     <ul>
       <li>สิทธิ์ที่ขอมีสิทธิ์เดียวคือกล้อง — ไม่มีสิทธิ์อินเทอร์เน็ต ภาพเอกสารไม่ถูกส่งไปที่ใด</li>
@@ -106,7 +133,7 @@ ${v.notes.map(n => `      <li>${esc(n)}</li>`).join('\n')}
 }
 
 /** นโยบายความเป็นส่วนตัว (ไทย + อังกฤษ) — ตรงกับสิ่งที่แอปทำจริง: ไม่มีสิทธิ์อินเทอร์เน็ต ไม่เก็บ/ไม่ส่งข้อมูล */
-const PRIVACY_DATE = '2026-10-01';
+const PRIVACY_DATE = "2026-10-01";
 function privacyPage() {
   return `<!doctype html>
 <html lang="th">
@@ -122,7 +149,7 @@ function privacyPage() {
   <main>
     <p><a href="./">สแกนเอกสาร PDF — แอป Android</a></p>
     <h1>นโยบายความเป็นส่วนตัว</h1>
-    <p>แอป <strong>สแกนเอกสาร PDF</strong> (Doc Scanner PDF, <code>io.github.chatrawichaitech.docscanner</code>) โดย chatrawichai-envbr
+    <p>แอป <strong>สแกนเอกสาร PDF</strong> (Doc Scanner PDF, <code>io.github.chatrawichaitech.docscanner</code>) โดย chatraweechai
       — มีผลตั้งแต่ ${PRIVACY_DATE}</p>
     <ul>
       <li><strong>ไม่เก็บและไม่ส่งข้อมูลใด ๆ</strong> — แอปไม่มีสิทธิ์ใช้อินเทอร์เน็ต ไม่มีบัญชีผู้ใช้ ไม่มีโฆษณา ไม่มีระบบวิเคราะห์การใช้งาน
@@ -140,7 +167,7 @@ function privacyPage() {
 
     <h2 lang="en">Privacy policy</h2>
     <div lang="en">
-    <p>The app <strong>Doc Scanner PDF</strong> (สแกนเอกสาร PDF, <code>io.github.chatrawichaitech.docscanner</code>) by chatrawichai-envbr
+    <p>The app <strong>Doc Scanner PDF</strong> (สแกนเอกสาร PDF, <code>io.github.chatrawichaitech.docscanner</code>) by chatraweechai
       — effective ${PRIVACY_DATE}</p>
     <ul>
       <li><strong>No data is collected or shared.</strong> The app has no internet permission, no user accounts, no ads and no analytics,
@@ -166,44 +193,57 @@ function privacyPage() {
 
 function build(opts) {
   const o = Object.assign({}, opts);
-  const vm = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(o.version || '');
-  if (!vm || o.version === '0.0.0') fail('version must be <major>.<minor>.<patch> (CHANGELOG.md)');
-  if (!/^[0-9a-f]{64}$/.test(o.cert || '')) fail('cert must be the SHA-256 of the signing certificate (64 hex)');
-  for (const k of ['source', 'app']) if (!/^[0-9a-f]{40}$/.test(o[k] || '')) fail(k + ' must be a full git commit');
-  const published = o.published || new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(published)) fail('published must be YYYY-MM-DDTHH:MM:SSZ');
+  const vm = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(o.version || "");
+  if (!vm || o.version === "0.0.0")
+    fail("version must be <major>.<minor>.<patch> (CHANGELOG.md)");
+  if (!/^[0-9a-f]{64}$/.test(o.cert || ""))
+    fail("cert must be the SHA-256 of the signing certificate (64 hex)");
+  for (const k of ["source", "app"])
+    if (!/^[0-9a-f]{40}$/.test(o[k] || ""))
+      fail(k + " must be a full git commit");
+  const published =
+    o.published || new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(published))
+    fail("published must be YYYY-MM-DDTHH:MM:SSZ");
 
-  const apk = fs.readFileSync(o.apk || fail('--apk is required'));
-  if (apk.length < 1024 || apk.length > MAX_APK) fail('APK size ' + apk.length + ' is out of range');
-  if (apk.readUInt32LE(0) !== 0x04034b50) fail('not an APK (zip) file');
+  const apk = fs.readFileSync(o.apk || fail("--apk is required"));
+  if (apk.length < 1024 || apk.length > MAX_APK)
+    fail("APK size " + apk.length + " is out of range");
+  if (apk.readUInt32LE(0) !== 0x04034b50) fail("not an APK (zip) file");
 
-  const out = path.resolve(o.out || fail('--out is required'));
-  if (path.basename(out) !== FOLDER) fail('the output folder must be named ' + FOLDER);
-  if (fs.existsSync(path.join(out, '.git'))) fail('refusing to write into a git repository root');
+  const out = path.resolve(o.out || fail("--out is required"));
+  if (path.basename(out) !== FOLDER)
+    fail("the output folder must be named " + FOLDER);
+  if (fs.existsSync(path.join(out, ".git")))
+    fail("refusing to write into a git repository root");
   if (fs.existsSync(out)) {
-    if (fs.lstatSync(out).isSymbolicLink() || !fs.statSync(out).isDirectory()) fail(out + ' is not a folder');
+    if (fs.lstatSync(out).isSymbolicLink() || !fs.statSync(out).isDirectory())
+      fail(out + " is not a folder");
     fs.rmSync(out, { recursive: true });
   }
   fs.mkdirSync(out, { recursive: true });
 
-  const notes = o.notes ? notesList(fs.readFileSync(o.notes, 'utf8')) : [];
+  const notes = o.notes ? notesList(fs.readFileSync(o.notes, "utf8")) : [];
   const v = {
     version: o.version,
     versionCode: Number(vm[1]) * 1000000 + Number(vm[2]) * 1000 + Number(vm[3]),
     file: `doc-scanner-pdf-${o.version}.apk`,
     size: apk.length,
-    sha256: crypto.createHash('sha256').update(apk).digest('hex'),
+    sha256: crypto.createHash("sha256").update(apk).digest("hex"),
     signingCertSha256: o.cert,
-    minAndroid: '8.0',
+    minAndroid: "8.0",
     sourceCommit: o.source,
     appCommit: o.app,
     publishedAt: published,
     notes,
   };
   fs.writeFileSync(path.join(out, v.file), apk);
-  fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify(v, null, 2) + '\n');
-  fs.writeFileSync(path.join(out, 'index.html'), page(v));
-  fs.writeFileSync(path.join(out, 'privacy.html'), privacyPage());
+  fs.writeFileSync(
+    path.join(out, "version.json"),
+    JSON.stringify(v, null, 2) + "\n",
+  );
+  fs.writeFileSync(path.join(out, "index.html"), page(v));
+  fs.writeFileSync(path.join(out, "privacy.html"), privacyPage());
   return v;
 }
 
