@@ -4,6 +4,23 @@
 กฎการทำงานของเจ้าของอยู่ใน `CLAUDE.md` ของแต่ละ repo เช่น ตอบเป็นภาษาไทยเท่านั้น ทดสอบจริงก่อน push main ทำ changelog
 ห้ามออกเวอร์ชันปลอม ห้ามส่งกุญแจทางแชต ห้ามแตะ doc-scanner-pdf-gas และห้ามเปลี่ยน package name
 
+## 0. ความคืบหน้า (อัปเดตท้าย session 2026-10-20)
+
+ทำเสร็จแล้วและ push ไป main ทั้งสอง repo:
+- ใส่ patch ข้อ 6 กลับแล้ว (screens test, PLAY_STORE.md) และ commit handoff.md ลงทั้งสอง repo
+- เปลี่ยนชื่อ `chatrawichai-envbr` -> `chatraweechai` ในเอกสาร/สคริปต์ (ยกเว้นประวัติใน CHANGELOG และไฟล์แอปที่ห้ามแตะ)
+- เว็บไซต์ใหม่: repo `doc-scanner-pdf/doc-scanner-pdf.github.io` — เว็บแอป https://doc-scanner-pdf.github.io/doc-scanner-pdf/ ,
+  หน้าดาวน์โหลด Android https://doc-scanner-pdf.github.io/android/ (โฟลเดอร์ `android/`), นโยบายความเป็นส่วนตัว .../android/privacy.html
+- เลิกเชื่อมโยง GAS ใน CLAUDE.md/README/CHANGELOG ของทั้งสอง repo (CHANGELOG repo โค้ดมีรายการ 2026-10-20)
+- ชุดทดสอบ: repo โค้ด 10/10 ผ่าน; repo Android webview/screens/parity/play ผ่าน, convert ผ่าน 34/37
+  (3 ข้อที่เหลือเพราะ commit `2bdc6e8` ใน source.json ไม่มีในประวัติแล้ว — ไม่ใช่ไฟล์ผิด; ไม่ออก v1.0.21 ตามคำสั่งเจ้าของ)
+
+ยังค้าง (ต้องทำโดยเจ้าของ/เมื่อพร้อม):
+- สร้าง repo `doc-scanner-pdf/doc-scanner-pdf.github.io` + เปิด GitHub Pages, ตั้ง secrets ใน repo Android
+  (`ANDROID_KEYSTORE_*`, `PLAY_SERVICE_ACCOUNT_JSON`, `SITE_DEPLOY_KEY`) แล้วเผยแพร่เว็บด้วย `tools/publish-site.sh`
+- ยังไม่ได้รัน Gradle/emulator (ไม่มี Android SDK ในเครื่อง) — รันใน CI เมื่อมีการเปลี่ยนแอปครั้งถัดไป
+- boot.js ของ repo โค้ดมีคอมเมนต์เก่าถึง GAS (เป็นไฟล์แอป — แก้พร้อมการเปลี่ยนแอปครั้งถัดไปเท่านั้น ไม่ให้เกิดเวอร์ชันปลอม)
+
 ## 1. เกิดอะไรขึ้น
 
 - repo ชุดเดิมของบัญชี `chatrawichai-envbr` ใช้งานไม่ได้แล้ว
