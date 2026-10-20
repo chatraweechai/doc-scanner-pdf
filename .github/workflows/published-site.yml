@@ -1,5 +1,5 @@
-# The public web site is published from this repository to chatrawichai-envbr/chatrawichai-envbr.github.io (GitHub Pages user site):
-# tools/publish-site.sh writes doc-scanner-pdf/ there → https://chatrawichai-envbr.github.io/doc-scanner-pdf/
+# The public web site is published from this repository to doc-scanner-pdf/doc-scanner-pdf.github.io (GitHub Pages user site):
+# tools/publish-site.sh writes doc-scanner-pdf/ there → https://doc-scanner-pdf.github.io/doc-scanner-pdf/
 #
 # Daily check (and on demand) that the published folder is exactly tools/publish-site.sh's output for its commit
 # and that doc-scanner-pdf/ has not changed on main since then (nothing left unpublished).
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout the site repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: chatrawichai-envbr/chatrawichai-envbr.github.io
+          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
           path: site
           persist-credentials: false
 
@@ -49,4 +49,4 @@ jobs:
             echo "::error::the published folder is not tools/publish-site.sh's output for ${published}"
             exit 1
           fi
-          echo "chatrawichai-envbr/chatrawichai-envbr.github.io: doc-scanner-pdf/ is doc-scanner-pdf-code@${published}; doc-scanner-pdf unchanged on main since then"
+          echo "doc-scanner-pdf/doc-scanner-pdf.github.io: doc-scanner-pdf/ is doc-scanner-pdf-code@${published}; doc-scanner-pdf unchanged on main since then"

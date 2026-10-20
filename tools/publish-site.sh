@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Builds the public web site of doc-scanner-pdf for the site repository chatrawichai-envbr/chatrawichai-envbr.github.io
-# (GitHub Pages user site → https://chatrawichai-envbr.github.io/doc-scanner-pdf/). All app code stays in
+# Builds the public web site of doc-scanner-pdf for the site repository doc-scanner-pdf/doc-scanner-pdf.github.io
+# (GitHub Pages user site → https://doc-scanner-pdf.github.io/doc-scanner-pdf/). All app code stays in
 # this repository; the site repository only receives this build output, in a folder named after the app.
 #
 #   tools/publish-site.sh [--commit <rev>] [<out-dir>]
 #
-#   <out-dir>  default: ../chatrawichai-envbr.github.io/doc-scanner-pdf (the site repository cloned next to this one)
+#   <out-dir>  default: ../doc-scanner-pdf.github.io/doc-scanner-pdf (the site repository cloned next to this one)
 #   --commit   commit to publish (default: HEAD). Only committed files are published (git archive), never local edits.
 #
 # The output is doc-scanner-pdf/ at that commit, stamped by tools/stamp-build.sh with the commit and the commit time,
@@ -27,8 +27,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 if [ -z "$out" ]; then
-  site="$root/../chatrawichai-envbr.github.io"
-  [ -d "$site/.git" ] || { echo "publish-site: clone the site repository first: git clone https://github.com/chatrawichai-envbr/chatrawichai-envbr.github.io $site" >&2; exit 1; }
+  site="$root/../doc-scanner-pdf.github.io"
+  [ -d "$site/.git" ] || { echo "publish-site: clone the site repository first: git clone https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io $site" >&2; exit 1; }
   out="$site/$APP"
 fi
 

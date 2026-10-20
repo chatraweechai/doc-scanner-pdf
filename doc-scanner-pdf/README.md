@@ -6,10 +6,7 @@
 
 **ใช้งานออนไลน์:** https://chatrawichai-envbr.github.io/doc-scanner-pdf/
 
-**เวอร์ชัน Google Apps Script:** [`chatrawichai-envbr/doc-scanner-pdf-gas`](https://github.com/chatrawichai-envbr/doc-scanner-pdf-gas)
-(โฟลเดอร์ `doc-scanner-pdf-gas/`) — แปลงอัตโนมัติจากโค้ดชุดนี้ ติดตั้งเป็นเว็บแอปในบัญชี Google ของคุณเองได้
-
-**แอป Android (มือถือและแท็บเล็ต):** [`chatrawichai-envbr/doc-scanner-pdf-android`](https://github.com/chatrawichai-envbr/doc-scanner-pdf-android)
+**แอป Android (มือถือและแท็บเล็ต):** [`chatraweechai/doc-scanner-pdf-android`](https://github.com/chatraweechai/doc-scanner-pdf-android)
 (โฟลเดอร์ `doc-scanner-pdf-android/`) — แปลงอัตโนมัติจากโค้ดชุดนี้ ทำงานในเครื่องโดยไม่ต้องใช้อินเทอร์เน็ต
 ดาวน์โหลดไฟล์ APK (รุ่นล่าสุด เซ็นด้วยกุญแจถาวร) ได้ที่ https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/
 
@@ -92,9 +89,9 @@
 
 ### นำขึ้นเว็บ (แนะนำ เพื่อใช้กล้องบนมือถือ)
 
-เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`chatrawichai-envbr/chatrawichai-envbr.github.io`](https://github.com/chatrawichai-envbr/chatrawichai-envbr.github.io)
+เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`chatrawichai-envbr/chatrawichai-envbr.github.io`](https://github.com/chatraweechai/chatrawichai-envbr.github.io)
 ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://chatrawichai-envbr.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ใน repo
-[`chatrawichai-envbr/doc-scanner-pdf-code`](https://github.com/chatrawichai-envbr/doc-scanner-pdf-code) (เดิมคือ `chatrawichai-tech/claude4code` และ `claude`)
+[`chatraweechai/doc-scanner-pdf-code`](https://github.com/chatraweechai/doc-scanner-pdf-code) (เดิมคือ `chatrawichai-tech/claude4code` และ `claude`)
 ทุกครั้งที่แก้ไข:
 1. รันชุดทดสอบในเบราว์เซอร์ทั้งหมด (`tools/tests`) — ต้องผ่านก่อนเผยแพร่ (CI รันซ้ำทุกครั้งที่ push)
 2. `tools/publish-site.sh` สร้างโฟลเดอร์เว็บจาก commit ที่ push แล้ว ประทับเลข commit (`tools/stamp-build.sh`)
@@ -166,7 +163,7 @@ doc-scanner-pdf/
 │   ├── i18n.js           ภาษาของหน้าจอ ไทย/อังกฤษ (พจนานุกรมอังกฤษ ใช้ข้อความไทยเป็น key) และปุ่มเปลี่ยนภาษา
 │   ├── motion.js         แอนิเมชันของรายการหน้า (เพิ่ม/ย้าย/ลบ) — ปิดเองเมื่อเครื่องตั้ง "ลดการเคลื่อนไหว"
 │   ├── boot.js           โหลด CSS/JS พร้อม ?v= (ล้างแคช), ตรวจเวอร์ชันล่าสุด และ AppPlatform (ที่อยู่ไฟล์ของแอป —
-│   │                     เวอร์ชัน Apps Script ใช้ AppPlatform ของตัวเองแทนไฟล์นี้ ไฟล์อื่นใช้ร่วมกันได้โดยไม่ต้องแก้)
+│   │                     แอป Android ใช้ AppPlatform ของตัวเองแทนไฟล์นี้ ไฟล์อื่นใช้ร่วมกันได้โดยไม่ต้องแก้)
 │   ├── cv-core.js        อัลกอริทึม: ตรวจจับขอบ, ดัดภาพ, ลบเงา, ฟิลเตอร์ (OpenCV, ไม่ใช้ DOM)
 │   ├── cv-worker.js      Web Worker ที่รัน OpenCV.js + cv-core.js
 │   ├── cv-engine.js      จัดการกลุ่ม worker, เลือก build SIMD/พื้นฐาน, โหมดสำรองในหน้าเว็บ

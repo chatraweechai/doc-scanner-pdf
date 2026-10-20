@@ -253,7 +253,7 @@ run(async () => {
   fs.rmSync(siteA, { recursive: true, force: true });
   fs.rmSync(siteB, { recursive: true, force: true });
 
-  // 6) publishing (tools/publish-site.sh → chatrawichai-envbr/chatrawichai-envbr.github.io, folder doc-scanner-pdf/)
+  // 6) publishing (tools/publish-site.sh → doc-scanner-pdf/doc-scanner-pdf.github.io, folder doc-scanner-pdf/)
   {
     const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { env: { ...process.env, TZ: 'UTC0' }, maxBuffer: 1 << 26 });
     const publish = (out, ...opts) => execFileSync('bash', [path.join(ROOT, 'tools/publish-site.sh'), ...opts, out], { stdio: 'pipe' });

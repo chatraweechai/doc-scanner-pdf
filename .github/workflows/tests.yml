@@ -1,6 +1,6 @@
 # Browser tests for doc-scanner-pdf (tools/tests, Playwright + Chromium).
 # Runs on every push/PR that touches the app or the tests. The web site is published from a passing commit to
-# chatrawichai-envbr/chatrawichai-envbr.github.io with tools/publish-site.sh (see CLAUDE.md, published-site.yml).
+# doc-scanner-pdf/doc-scanner-pdf.github.io with tools/publish-site.sh (see CLAUDE.md, published-site.yml).
 name: Tests
 
 on:
