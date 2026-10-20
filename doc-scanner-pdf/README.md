@@ -122,7 +122,7 @@
 | OpenCV.js 4.10.0 แบบพื้นฐาน | `vendor/opencv/basic/` | สร้างจากซอร์สเดียวกัน (สำหรับเบราว์เซอร์ที่ไม่รองรับ SIMD และการเปิดผ่าน `file://`) | Apache-2.0 |
 | Tesseract.js 7.0.0 + ข้อมูลภาษา tha/eng | `vendor/tesseract/` | ไฟล์เดียวกับ npm release ทางการ (ดู `vendor/tesseract/README.md`, `SHA256SUMS`) | Apache-2.0 |
 | PDF.js 6.3.289 (legacy build) | `vendor/pdfjs/` | ไฟล์เดียวกับ npm `pdfjs-dist@6.3.289` — อ่านไฟล์ PDF สำหรับแปลงเป็นรูป/Word, โหลดเฉพาะเมื่อเปิดไฟล์ PDF (ดู `vendor/pdfjs/README.md`) | Apache-2.0 |
-| libheif 1.23.2 (libheif-js, WebAssembly) | `vendor/libheif/` | ไฟล์เดียวกับ npm `libheif-js@1.23.2` — ถอดรหัส HEIC/HEIF, โหลดเฉพาะเมื่อเปิดไฟล์ HEIC (ดู `vendor/libheif/README.md`) | LGPL-3.0 |
+| libheif 1.23.5 (libheif-js, WebAssembly) | `vendor/libheif/` | ไฟล์เดียวกับ npm `libheif-js@1.23.5` — ถอดรหัส HEIC/HEIF, โหลดเฉพาะเมื่อเปิดไฟล์ HEIC (ดู `vendor/libheif/README.md`) | LGPL-3.0 |
 | jsPDF 4.2.1 | `vendor/jspdf/` | ไฟล์เดียวกับ npm release ทางการ (sha384 `qovJwSBb…T3` ตรงกับ npm) | MIT |
 | ฟอนต์ Sarabun Regular | `vendor/fonts/` | Google Fonts (ใช้ฝังในชั้นข้อความของ PDF ที่ค้นหาได้) | OFL-1.1 |
 | Noto Sans Thai | Google Fonts | ถ้าโหลดไม่ได้จะใช้ฟอนต์ของเครื่องแทน | OFL |

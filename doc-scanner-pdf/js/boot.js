@@ -8,8 +8,8 @@
  *   - ถ้าหน้า HTML เองค้างในแคช (commit ไม่ตรงกับ version.json) จะโหลดหน้าใหม่ 1 ครั้งด้วย URL ใหม่
  *
  * window.AppPlatform — จุดเดียวที่โค้ดของแอปใช้หาไฟล์ขณะทำงาน (worker, OpenCV, Tesseract, ฟอนต์, jsPDF, PDF.js)
- * เวอร์ชัน Google Apps Script (repo claude4gas) แทนที่ไฟล์นี้ด้วย AppPlatform ของตัวเอง
- * ที่ส่งไฟล์ผ่าน google.script.run — โค้ดส่วนอื่นของแอปจึงใช้ร่วมกันได้ทั้งสองแบบโดยไม่ต้องแก้
+ * แพลตฟอร์มอื่น (แอป Android) แทนที่ไฟล์นี้ด้วย AppPlatform ของตัวเอง
+ * — โค้ดส่วนอื่นของแอปจึงใช้ร่วมกันได้โดยไม่ต้องแก้
  * แพลตฟอร์มอื่นเพิ่ม hook ที่ไม่บังคับได้ เช่น versionLabel (เลขรุ่นที่แสดงแทนเลข commit — แอป Android: v1.0.N),
  * saveFile/shareFile/shareText/cameraHelp (แอป Android ที่บันทึก/แชร์ผ่านระบบ)
  */
