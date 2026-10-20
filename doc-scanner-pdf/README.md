@@ -4,11 +4,11 @@
 เขียนด้วย **HTML + CSS + JavaScript ล้วน** (ไม่มี PHP / TypeScript / Python ไม่ต้อง build)
 ภาพทั้งหมดประมวลผลในเบราว์เซอร์ของผู้ใช้ **ไม่มีการอัปโหลดไปที่เซิร์ฟเวอร์ใด**
 
-**ใช้งานออนไลน์:** https://chatrawichai-envbr.github.io/doc-scanner-pdf/
+**ใช้งานออนไลน์:** https://doc-scanner-pdf.github.io/doc-scanner-pdf/
 
 **แอป Android (มือถือและแท็บเล็ต):** [`chatraweechai/doc-scanner-pdf-android`](https://github.com/chatraweechai/doc-scanner-pdf-android)
 (โฟลเดอร์ `doc-scanner-pdf-android/`) — แปลงอัตโนมัติจากโค้ดชุดนี้ ทำงานในเครื่องโดยไม่ต้องใช้อินเทอร์เน็ต
-ดาวน์โหลดไฟล์ APK (รุ่นล่าสุด เซ็นด้วยกุญแจถาวร) ได้ที่ https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/
+ดาวน์โหลดไฟล์ APK (รุ่นล่าสุด เซ็นด้วยกุญแจถาวร) ได้ที่ https://doc-scanner-pdf.github.io/android/
 
 ## ความสามารถ
 
@@ -32,7 +32,7 @@
 
 ## วิธีใช้งาน
 
-1. เปิด https://chatrawichai-envbr.github.io/doc-scanner-pdf/ หรือเปิดไฟล์ `index.html` ในเครื่องได้ทันที (ดับเบิลคลิก)
+1. เปิด https://doc-scanner-pdf.github.io/doc-scanner-pdf/ หรือเปิดไฟล์ `index.html` ในเครื่องได้ทันที (ดับเบิลคลิก)
    ไลบรารีทั้งหมดอยู่ในโฟลเดอร์ `vendor/` จึงไม่ต้องพึ่ง CDN ภายนอก
 2. กด **ถ่ายภาพ** หรือ **เลือกรูปภาพ** ระบบจะครอปตามขอบกระดาษ ลบเงา และปรับภาพให้อัตโนมัติ
 3. แตะที่หน้าเพื่อ **ครอป / ปรับขอบ** หรือเปลี่ยนรูปแบบภาพ ปรับแสง หมุนภาพ
@@ -89,8 +89,8 @@
 
 ### นำขึ้นเว็บ (แนะนำ เพื่อใช้กล้องบนมือถือ)
 
-เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`chatrawichai-envbr/chatrawichai-envbr.github.io`](https://github.com/chatraweechai/chatrawichai-envbr.github.io)
-ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://chatrawichai-envbr.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ใน repo
+เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`doc-scanner-pdf/doc-scanner-pdf.github.io`](https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io)
+ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://doc-scanner-pdf.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ใน repo
 [`chatraweechai/doc-scanner-pdf-code`](https://github.com/chatraweechai/doc-scanner-pdf-code) (เดิมคือ `chatrawichai-tech/claude4code` และ `claude`)
 ทุกครั้งที่แก้ไข:
 1. รันชุดทดสอบในเบราว์เซอร์ทั้งหมด (`tools/tests`) — ต้องผ่านก่อนเผยแพร่ (CI รันซ้ำทุกครั้งที่ push)
@@ -98,8 +98,7 @@
    ลงในโฟลเดอร์ `doc-scanner-pdf/` ของ repo เว็บไซต์ แล้ว commit/push repo นั้น
 3. CI ของ repo เว็บไซต์ตรวจเว็บจริงว่าให้บริการเวอร์ชันใหม่ครบทุกไฟล์ (`version.json`) และ CI ของ repo นี้ตรวจทุกวันว่าไม่มีการแก้ที่ยังไม่เผยแพร่
 
-ที่อยู่เดิมบน chatrawichai-tech.github.io ใช้ไม่ได้แล้ว (repo เดิมถูกย้ายมาที่บัญชี chatrawichai-envbr เมื่อ 2026-10-01
-และเว็บไซต์อยู่ที่ https://chatrawichai-envbr.github.io/ ตั้งแต่ 2026-10-02) — ใช้ที่อยู่ด้านบนแทน
+ที่อยู่เดิมบน chatrawichai-tech.github.io และ chatrawichai-envbr.github.io ใช้ไม่ได้แล้ว — ใช้ที่อยู่ด้านบนแทน
 
 รายการการเปลี่ยนแปลงแต่ละครั้งอยู่ใน `CHANGELOG.md` ของ repo
 

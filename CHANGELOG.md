@@ -1,9 +1,15 @@
 # บันทึกการเปลี่ยนแปลง — สแกนเอกสารเป็น PDF (เว็บแอป)
 
-เว็บแอปที่ https://chatrawichai-envbr.github.io/doc-scanner-pdf/ — รายการล่าสุดอยู่บนสุด
+เว็บแอปที่ https://doc-scanner-pdf.github.io/doc-scanner-pdf/ — รายการล่าสุดอยู่บนสุด
 เลขเวอร์ชันของเว็บคือเลข commit ที่แสดงท้ายหน้าแรก ("เวอร์ชัน xxxxxxx")
-เวอร์ชัน Google Apps Script (`chatrawichai-envbr/doc-scanner-pdf-gas`) และแอป Android (`chatrawichai-envbr/doc-scanner-pdf-android`)
+แอป Android (`chatraweechai/doc-scanner-pdf-android`)
 มีบันทึกของตัวเองใน repo นั้น
+
+## 2026-10-20
+
+- **กู้คืน repo และย้ายเว็บไซต์** — repo เดิมในบัญชี `chatrawichai-envbr` ใช้ไม่ได้แล้ว จึงกู้ไฟล์ทั้งหมดมาไว้ที่ `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์ย้ายไปที่ https://doc-scanner-pdf.github.io/ (เว็บแอปอยู่ที่ https://doc-scanner-pdf.github.io/doc-scanner-pdf/ และหน้าดาวน์โหลดแอป Android อยู่ที่ https://doc-scanner-pdf.github.io/android/)
+- เลิกเชื่อมโยง Google Apps Script: เหลือเพียงเว็บแอป แอป Android และเว็บไซต์ที่อัปเดตไปด้วยกัน
+- ตัวแอปไม่เปลี่ยน: แก้เฉพาะชื่อ repo ที่อยู่ในลิงก์ เอกสาร สคริปต์เผยแพร่ (`tools/publish-site.sh`) และการตรวจของ CI ไฟล์ของแอปเหมือนเดิมทุกไบต์ จึงไม่ออกรุ่นใหม่ของแอป Android
 
 ## 2026-10-02
 
