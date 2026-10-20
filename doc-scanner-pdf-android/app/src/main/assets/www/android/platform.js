@@ -1,5 +1,5 @@
 /*
- * AppPlatform ของแอป Android (repo chatrawichai-tech/claude4app) — ใช้แทน js/boot.js ของเวอร์ชันเว็บ
+ * AppPlatform ของแอป Android (repo chatraweechai/doc-scanner-pdf-android) — ใช้แทน js/boot.js ของเวอร์ชันเว็บ
  *
  * หน้าเว็บ, โค้ด และไลบรารีทั้งหมดอยู่ในแอป (assets/www) เปิดผ่าน https://appassets.androidplatform.net/
  * (MainActivity.kt เสิร์ฟให้ ไม่ใช้อินเทอร์เน็ต) โค้ดของแอปจึงเหมือนเวอร์ชันเว็บทุกไบต์
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  var SOURCE = {"repo":"chatrawichai-tech/claude4code","commit":"2bdc6e8360e3c6c5bb0a0b4622416fc710c7ddbf","path":"doc-scanner-pdf"};
+  var SOURCE = {"repo":"chatraweechai/doc-scanner-pdf-code","commit":"a0577f5f82831aa7b49d9b6ea91963971304c839","path":"doc-scanner-pdf"};
   var CHUNK = 192 * 1024;           // ไบต์ต่อข้อความ (base64 ~256 KB)
   var bridge = window.DocScannerBridge || null;
 

@@ -29,7 +29,7 @@ const WWW = 'app/src/main/assets/www';
 // ชื่อ repo ต้นทางที่บันทึกไว้ในแอป (android/platform.js, source.json) — ยังเป็นชื่อเดิมของ commit ที่แอปรุ่นปัจจุบันแปลงมา
 // repo นี้ย้ายมาเป็น chatraweechai/doc-scanner-pdf-code เมื่อ 2026-10-01: เปลี่ยนค่านี้เป็น 'chatraweechai/doc-scanner-pdf-code' พร้อมกับ
 // การเปลี่ยนแอปจริงครั้งถัดไป (เปลี่ยนแค่ชื่อจะทำให้ไฟล์แอปต่างไปทั้งที่แอปไม่เปลี่ยน = รุ่นใหม่ปลอม — เจ้าของห้ามเด็ดขาด)
-const SOURCE_REPO = 'chatrawichai-tech/claude4code';
+const SOURCE_REPO = 'chatraweechai/doc-scanner-pdf-code';
 const APP_DIR = 'doc-scanner-pdf';
 // ชนิดไฟล์ที่เสิร์ฟได้ — ต้องตรงกับ AssetRouter.kt (ทดสอบใน tools/tests/suites/convert.js)
 const MIME = {

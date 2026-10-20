@@ -1,5 +1,5 @@
 /*
- * AppPlatform ของแอป Android (repo chatrawichai-tech/claude4app) — ใช้แทน js/boot.js ของเวอร์ชันเว็บ
+ * AppPlatform ของแอป Android (repo chatraweechai/doc-scanner-pdf-android) — ใช้แทน js/boot.js ของเวอร์ชันเว็บ
  *
  * หน้าเว็บ, โค้ด และไลบรารีทั้งหมดอยู่ในแอป (assets/www) เปิดผ่าน https://appassets.androidplatform.net/
  * (MainActivity.kt เสิร์ฟให้ ไม่ใช้อินเทอร์เน็ต) โค้ดของแอปจึงเหมือนเวอร์ชันเว็บทุกไบต์

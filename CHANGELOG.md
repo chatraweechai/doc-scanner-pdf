@@ -1,11 +1,19 @@
 # บันทึกการเปลี่ยนแปลง — แอป Android สแกนเอกสาร PDF
 
-ดาวน์โหลดรุ่นล่าสุด: https://chatrawichai-envbr.github.io/doc-scanner-pdf-android/ — รายการล่าสุดอยู่บนสุด
-(repo ย้ายจาก `chatrawichai-tech/claude4app` มาที่ `chatrawichai-envbr/doc-scanner-pdf-android` เมื่อ 2026-10-01 — ตัวแอปไม่เปลี่ยน)
+ดาวน์โหลดรุ่นล่าสุด: https://doc-scanner-pdf.github.io/android/ — รายการล่าสุดอยู่บนสุด
+(repo ปัจจุบันคือ `chatraweechai/doc-scanner-pdf-android` — เดิม `chatrawichai-tech/claude4app` และ `chatrawichai-envbr/doc-scanner-pdf-android`)
 
 **หัวข้อบนสุดคือเลขรุ่นของแอป** (`## v1.0.N — วันที่`): Gradle ใช้เป็น versionName/versionCode และแอปแสดง
 "เวอร์ชัน v1.0.N (Android)" — CI ออก Release และหน้าดาวน์โหลดใหม่เฉพาะเมื่อมีรุ่นใหม่ที่นี่ **และ** แอปเปลี่ยนจริง
 (แก้แค่ CI/ชุดทดสอบ/เอกสาร ไม่ออกรุ่นใหม่; แอปเปลี่ยนแต่ไม่เพิ่มรุ่นใหม่ หรือเพิ่มรุ่นใหม่แต่แอปไม่เปลี่ยน CI จะไม่ผ่าน)
+
+## v1.0.21 — 2026-10-20
+
+- **ปิดช่องโหว่ในการเปิดรูป HEIC/HEIF** — อัปเกรดตัวถอดรหัส libheif ในแอปจาก 1.23.2 เป็น 1.23.5 ซึ่งแก้ช่องโหว่ที่รูป HEIC
+  ที่สร้างขึ้นโดยเจตนาอาจทำให้หน่วยความจำล้น (heap buffer overflow), แอปค้าง, อ่านข้อมูลเกินขอบเขต หรือใช้หน่วยความจำจนหมด
+  — รูปที่ได้รับจากผู้อื่นจึงเปิดได้ปลอดภัยขึ้น การใช้งานและผลการถอดรหัสเหมือนเดิม
+- หน้าดาวน์โหลดและนโยบายความเป็นส่วนตัวย้ายไปที่ https://doc-scanner-pdf.github.io/android/ และโค้ดต้นทางอยู่ที่
+  `chatraweechai/doc-scanner-pdf-code` (ที่อยู่เดิมใช้ไม่ได้แล้ว)
 
 ## v1.0.20 — 2026-09-29
 

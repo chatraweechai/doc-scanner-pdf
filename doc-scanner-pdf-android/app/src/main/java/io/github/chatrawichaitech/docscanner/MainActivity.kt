@@ -50,7 +50,7 @@ import java.util.UUID
 import kotlin.math.roundToInt
 
 /**
- * แอปสแกนเอกสาร: หน้าเว็บ doc-scanner-pdf (จาก repo claude4code, อยู่ใน assets/www) ใน WebView
+ * แอปสแกนเอกสาร: หน้าเว็บ doc-scanner-pdf (จาก repo chatraweechai/doc-scanner-pdf-code, อยู่ใน assets/www) ใน WebView
  * แอปเพิ่มเฉพาะสิ่งที่ WebView ทำเองไม่ได้ — สิทธิ์กล้อง, กล้องของเครื่อง/เลือกรูป, บันทึก/แชร์ไฟล์, ปุ่มย้อนกลับ
  * หน้าเว็บและงานที่ค้างอยู่อยู่ใน WebSession (ViewModel) — ระบบสร้าง Activity ใหม่แล้วหน้าที่สแกนไว้ไม่หาย
  */
