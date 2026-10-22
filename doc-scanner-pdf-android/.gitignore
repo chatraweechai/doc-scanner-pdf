@@ -1,0 +1,26 @@
+# Android / Gradle
+build/
+.gradle/
+.kotlin/
+local.properties
+*.apk
+*.aab
+*.idsig
+captures/
+.idea/
+*.iml
+.cxx/
+.externalNativeBuild/
+
+# signing keys and credentials — never commit them (CI gets them from GitHub secrets)
+*.jks
+*.keystore
+*.p12
+keystore.properties
+
+# tests
+node_modules/
+tools/tests/out/
+
+# store images and videos (tools/store/build.js, video.js — CI artifact "store-listing")
+tools/store/out/

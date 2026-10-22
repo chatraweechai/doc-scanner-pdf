@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English (default) — Thai is in values-th/strings.xml. The app uses the language of its web page (UiLanguage.kt). -->
+<resources>
+    <string name="app_name">Doc Scanner PDF</string>
+    <string name="webview_outdated">Android System WebView on this device is too old — saving and sharing files won\'t work. Please update \"Android System WebView\" or \"Chrome\" from the Play Store</string>
+    <string name="ok">OK</string>
+    <string name="camera_denied_picker">No camera permission — choose images from the device instead</string>
+    <string name="no_camera_app">No camera app found — choose images from the device instead</string>
+    <string name="no_picker_app">No app found for choosing images</string>
+    <string name="no_share_app">No app can share this file</string>
+    <string name="share_title">Share with</string>
+    <string name="cannot_open_link">Can\'t open the link</string>
+    <string name="page_reloaded">Not enough memory, so the app restarted the page — the scanned pages were lost</string>
+    <string name="save_busy">Another file is being saved — try again when it has finished</string>
+    <string name="save_failed">Couldn\'t write the file to the chosen location</string>
+    <string name="save_unavailable">No window found for choosing where to save the file</string>
+    <string name="transfer_failed">Couldn\'t receive the file from the page</string>
+</resources>

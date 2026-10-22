@@ -1,0 +1,31 @@
+Doc Scanner PDF turns photos of documents into clean, sharp PDF files right on your phone or tablet. Nothing is uploaded: the app has no internet permission, so your documents never leave your device.
+
+SCAN
+• Take several pages in a row with the in-app camera — the document edges are found live
+• Or use your device camera, or choose photos (JPEG, PNG, WebP and HEIC/HEIF from iPhones and many Android phones)
+• Automatic crop with perspective correction, or drag the corners to crop freely (with a magnifier)
+
+ENHANCE
+• Vivid color, sharp black & white text, grayscale or the original
+• Removes the shadows of hands and phones; adjust brightness, contrast and text darkness
+• Rotate, reorder and delete pages, or apply the same settings to every page
+
+CREATE PDF
+• A4, Letter, Legal, A5 or the size of the image; portrait, landscape or automatic; margins; file size
+• Searchable PDF: the recognized text is placed invisibly under the image, so you can search, select and copy it
+• Save anywhere (Downloads, Google Drive …) or share to other apps
+
+TEXT RECOGNITION (OCR)
+• Read Thai and English text from one page or all pages, then edit, copy, save as .txt or share it
+
+PDF TOOLS
+• PDF to JPG: Small (96 dpi), Standard (150 dpi) or High (300 dpi) — several pages come as one .zip
+• PDF to Word (.docx): the text stored in the PDF is taken exactly as it is, including Thai tone marks and vowels; scanned pages are read with OCR and listed so you can check them
+• Opens password-protected PDFs
+
+FOR PHONES AND TABLETS
+• Thai and English interface — follows your device language, switch any time with the globe button
+• Phones, small phones, tablets, foldables, split screen, portrait and landscape
+• Smooth animations that turn off when your device reduces motion
+
+Free, no ads, no account.

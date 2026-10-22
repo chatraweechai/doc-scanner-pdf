@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- สิทธิ์เดียวที่ขอ: กล้อง (กล้องในแอป + กล้องของเครื่อง) — ไม่ขอสิทธิ์อินเทอร์เน็ต ทุกอย่างประมวลผลในเครื่อง -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DocScanner"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="33">
+
+        <!-- ไม่ให้ Android System WebView ส่งสถิติการใช้งาน/ข้อผิดพลาดของหน้าเว็บในแอปไปที่ Google — แอปไม่เก็บและไม่ส่งข้อมูลใด ๆ
+             (ตรงกับนโยบายความเป็นส่วนตัวและแบบฟอร์ม Data safety ของ Google Play) -->
+        <meta-data android:name="android.webkit.WebView.MetricsOptOut" android:value="true" />
+
+        <!-- configChanges: หมุนจอ/แยกหน้าจอ/พับจอ/เปลี่ยนขนาดตัวอักษร ไม่สร้างหน้าใหม่ — หน้าที่สแกนไว้ไม่หาย -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboard|keyboardHidden|navigation|uiMode|fontScale|locale|layoutDirection|touchscreen|colorMode|mcc|mnc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ไฟล์ชั่วคราว (รูปจากกล้องของเครื่อง, ไฟล์ที่แชร์) ส่งให้แอปอื่นผ่าน content:// เท่านั้น -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

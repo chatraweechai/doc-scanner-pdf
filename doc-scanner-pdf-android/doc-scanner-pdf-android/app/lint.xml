@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- AAPT2 ต้องการ <adaptive-icon> ในโฟลเดอร์ -v26 เสมอ (ย้ายไป mipmap-anydpi แล้ว build ไม่ผ่าน) -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+    <!-- targetSdk 36 (Android 16) โดยตั้งใจ: เปลี่ยนเป็น 37 เมื่อทดสอบบน emulator Android 17 ใน CI ผ่านแล้วเท่านั้น -->
+    <issue id="OldTargetApi" severity="ignore" />
+</lint>

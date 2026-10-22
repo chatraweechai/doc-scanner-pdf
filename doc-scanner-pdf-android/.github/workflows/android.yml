@@ -1,0 +1,494 @@
+# chatraweechai/doc-scanner-pdf-android (was chatrawichai-tech/claude4app) = the Android version of
+# chatraweechai/doc-scanner-pdf-code (was chatrawichai-tech/claude4code), folder doc-scanner-pdf.
+#
+#   sync      — doc-scanner-pdf-android/ is exactly what tools/convert/build.js produces from the doc-scanner-pdf-code commit
+#               in source.json, and converting that repository's main branch would give the same app (also daily; a
+#               change there that does not reach the app needs no conversion and no new version)
+#   web       — converter checks + the app's page as the WebView runs it (Chromium): bridge, screen sizes from
+#               small phones to tablets, parity with the web version
+#   build     — Gradle wrapper verified, Android lint, JVM unit tests, debug + release APK. The version comes from the
+#               top heading of CHANGELOG.md; tools/release/version.js --decide fails early when the app changed
+#               without a new version or a new version has no app change
+#   emulator  — the real app on Android emulators: phone (Android 16), small phone, tablet (androidTest)
+#   release   — on main, when everything passed and CHANGELOG.md has a new version for a changed app: GitHub Release
+#               with the installable APK and that version's changelog (otherwise no release — never a fake new version).
+#               Never a release signed with a temporary key: without the permanent signing key it fails and says so
+#   site      — the released APK of the current version (from the GitHub Release, only if signed with the permanent
+#               key) and its download page are pushed to https://doc-scanner-pdf.github.io/android/
+#               (tools/site/build-page.js) — nothing to do when the page already has that exact APK
+#
+# Actions are pinned to full commit SHAs for supply-chain safety.
+name: Android
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '23 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Consistency with chatraweechai/doc-scanner-pdf-code
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read source commit
+        id: src
+        run: |
+          commit="$(node -p "require('./doc-scanner-pdf-android/source.json').commit")"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid commit in source.json"; exit 1; }
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout chatraweechai/doc-scanner-pdf-code (all history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: chatraweechai/doc-scanner-pdf-code
+          # the repository is public; a read-only deploy key is used only if it is made private again
+          ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
+          ref: ${{ steps.src.outputs.commit }}
+          path: code-src
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generated files match the converter output
+        run: node tools/convert/build.js --source code-src --check
+
+      # doc-scanner-pdf-code main converted, but named as the recorded commit: identical files = the app did not change, so
+      # nothing to convert (no fake new version). Different files = a real change that still has to be converted.
+      - name: doc-scanner-pdf-code main gives the same app
+        env:
+          SRC: ${{ steps.src.outputs.commit }}
+        run: |
+          git -C code-src checkout -q origin/main
+          if ! node tools/convert/build.js --source code-src --check --as-commit "$SRC"; then
+            echo "::error::doc-scanner-pdf-android is behind chatraweechai/doc-scanner-pdf-code — main changes the app since ${SRC:0:12}. Run tools/convert/build.js, test, add a CHANGELOG.md version and push."
+            git -C code-src log --oneline "$SRC..origin/main" -- doc-scanner-pdf
+            exit 1
+          fi
+          echo "In sync with chatraweechai/doc-scanner-pdf-code main (same app as ${SRC:0:12})"
+
+  web:
+    name: Page tests (WebView emulation, screen sizes, parity)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read source commit
+        id: src
+        run: echo "commit=$(node -p "require('./doc-scanner-pdf-android/source.json').commit")" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout chatraweechai/doc-scanner-pdf-code at the source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: chatraweechai/doc-scanner-pdf-code
+          # the repository is public; a read-only deploy key is used only if it is made private again
+          ssh-key: ${{ secrets.CLAUDE_REPO_KEY }}
+          ref: ${{ steps.src.outputs.commit }}
+          path: code-src
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/tests/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: tools/tests
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: tools/tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run all suites
+        working-directory: tools/tests
+        env:
+          CLAUDE4CODE_SRC: ${{ github.workspace }}/code-src
+        run: node run-all.js
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: page-screenshots
+          path: tools/tests/out
+          retention-days: 14
+          if-no-files-found: ignore
+
+  build:
+    name: Build, lint, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # the permanent signing key is given only to release builds of main (push / Run workflow) — never to other
+      # branches, pull requests or the daily scheduled check; those sign the release APK with the debug key
+      RELEASE_BUILD: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # release tags: did the app change since the last release?
+          persist-credentials: false
+
+      - name: Version (CHANGELOG.md) and release decision
+        run: |
+          set -euo pipefail
+          d="$(node tools/release/version.js --decide)"
+          echo "APP_VERSION=$(jq -r .version <<<"$d")" >> "$GITHUB_ENV"
+          echo "::notice title=Version $(jq -r .version <<<"$d")::$(jq -r '.action + " — " + .reason' <<<"$d")"
+
+      - name: Verify the Gradle wrapper
+        run: tools/ci/verify-gradle-wrapper.sh
+
+      - name: Android SDK packages
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" > /dev/null
+
+      - name: Lint, unit tests, APKs, Play bundle
+        working-directory: doc-scanner-pdf-android
+        env:
+          KEYSTORE_BASE64: ${{ env.RELEASE_BUILD == 'true' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ env.RELEASE_BUILD == 'true' && secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
+          ANDROID_KEY_ALIAS: ${{ env.RELEASE_BUILD == 'true' && secrets.ANDROID_KEY_ALIAS || '' }}
+          ANDROID_KEY_PASSWORD: ${{ env.RELEASE_BUILD == 'true' && secrets.ANDROID_KEY_PASSWORD || '' }}
+        run: |
+          if [ "$RELEASE_BUILD" != "true" ]; then
+            echo "::notice title=Signing::Not a release build of main — the release APK is signed with the debug key (the permanent key is used only on main)."
+          elif [ -n "$KEYSTORE_BASE64" ]; then
+            umask 077
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+            echo "Release APK is signed with the permanent key (ANDROID_KEYSTORE_BASE64)."
+          else
+            echo "::notice title=Signing::No ANDROID_KEYSTORE_BASE64 secret — the release APK is signed with a temporary key; see README (ติดตั้งและอัปเดต)."
+          fi
+          ./gradlew --no-daemon --stacktrace lintDebug testDebugUnitTest assembleDebug assembleRelease bundleRelease
+          rm -f "$RUNNER_TEMP/release.jks"
+          mkdir -p ../dist ../dist-debug
+          cp app/build/outputs/apk/release/app-release.apk "../dist/doc-scanner-pdf-${APP_VERSION}.apk"
+          # Android App Bundle for Google Play (signed with the same key = the Play upload key) — not for installing
+          cp app/build/outputs/bundle/release/app-release.aab "../dist/doc-scanner-pdf-${APP_VERSION}.aab"
+          # debug APK (debuggable: WebView debugging, run-as) — for developers only, never published in a release
+          cp app/build/outputs/apk/debug/app-debug.apk "../dist-debug/doc-scanner-pdf-${APP_VERSION}-debug.apk"
+          ls -la ../dist ../dist-debug
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: apk
+          path: dist
+          retention-days: 30
+
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: apk-debug
+          path: dist-debug
+          retention-days: 14
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-reports
+          path: doc-scanner-pdf-android/app/build/reports
+          retention-days: 14
+          if-no-files-found: ignore
+
+  emulator:
+    name: Android emulator — ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: phone
+            api: '36'
+            device: pixel_7
+          - name: small-phone
+            api: '34'
+            device: Nexus One
+          - name: tablet
+            api: '35'
+            device: pixel_tablet
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify the Gradle wrapper
+        run: tools/ci/verify-gradle-wrapper.sh
+
+      - name: Android SDK packages
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" > /dev/null
+
+      - name: Build the app and the tests
+        working-directory: doc-scanner-pdf-android
+        run: ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest
+
+      - name: Start the emulator
+        run: tools/ci/start-emulator.sh "${{ matrix.api }}" "${{ matrix.device }}" "${{ matrix.name }}"
+
+      - name: Install the app and check it on the device
+        working-directory: doc-scanner-pdf-android
+        run: |
+          ./gradlew --no-daemon -q installDebug
+          adb="$ANDROID_HOME/platform-tools/adb"
+          timeout 30 "$adb" shell cmd package resolve-activity --brief -c android.intent.category.LAUNCHER io.github.chatrawichaitech.docscanner || true
+          timeout 30 "$adb" shell dumpsys package io.github.chatrawichaitech.docscanner | grep -E -A3 "Activity Resolver|versionCode|targetSdk|flags=|MainActivity" | head -40 || true
+
+      - name: Run the tests on the emulator
+        working-directory: doc-scanner-pdf-android
+        run: ./gradlew --no-daemon connectedDebugAndroidTest
+
+      # Gradle บอกว่าสำเร็จได้แม้ไม่มีการทดสอบใดรันบนเครื่อง (เช่น ติดตั้งไม่ได้) — ตรวจผลจริงจากไฟล์ผลการทดสอบ
+      - name: Check that every test ran and passed on the device
+        run: |
+          python3 - <<'PY'
+          import glob, re, sys
+          src = open('doc-scanner-pdf-android/app/src/androidTest/java/io/github/chatrawichaitech/docscanner/MainActivityTest.kt', encoding='utf-8').read()
+          expected = set(re.findall(r'@Test\s+fun\s+(\w+)', src))
+          passed, bad = set(), []
+          for f in glob.glob('doc-scanner-pdf-android/app/build/outputs/androidTest-results/connected/**/*.xml', recursive=True):
+              s = open(f, encoding='utf-8', errors='replace').read()
+              for m in re.finditer(r'<testcase\s+name="([^"]+)"[^>]*?(/>|>([\s\S]*?)</testcase>)', s):
+                  body = m.group(3) or ''
+                  if re.search(r'<(failure|error|skipped)', body): bad.append(m.group(1))
+                  else: passed.add(m.group(1))
+          missing = sorted(expected - passed)
+          print(f'expected {len(expected)} tests, passed {len(passed & expected)}')
+          if not expected or missing or bad:
+              print(f'::error::tests not run or not passed on the device: {sorted(set(missing) | set(bad))}')
+              sys.exit(1)
+          PY
+
+      - name: Show failures and logcat
+        if: failure()
+        run: |
+          python3 - <<'PY' || true
+          import glob, re, html
+          for f in glob.glob('doc-scanner-pdf-android/app/build/outputs/androidTest-results/connected/**/*.xml', recursive=True):
+              s = open(f, encoding='utf-8', errors='replace').read()
+              for m in re.finditer(r'<testcase name="([^"]+)"[^>]*>\s*<failure[^>]*>([\s\S]*?)</failure>', s):
+                  msg = [l for l in html.unescape(m.group(2)).splitlines() if not l.strip().startswith('at ')]
+                  print('FAILED', m.group(1)); print('\n'.join(msg[:12])); print('-----')
+          PY
+          adb="$ANDROID_HOME/platform-tools/adb"
+          if timeout 10 "$adb" get-state > /dev/null 2>&1; then
+            timeout 20 "$adb" shell pm list instrumentation || true
+            timeout 20 "$adb" shell pm list packages | grep -i docscanner || true
+            timeout 60 "$adb" logcat -d | grep -E "DocScanner|chromium|TestRunner: (started|failed|finished)|AndroidRuntime|ActivityTaskManager: START|Start proc.*docscanner|PackageManager.*docscanner|docscanner.*(denied|disabled|not found)|InputDispatcher|BackNavigation|OnBackInvoked|ImeTracker|moveTaskToBack" | grep -v "^\s*at " | tail -300 || true
+          else
+            echo "no emulator connected"; tail -80 "$RUNNER_TEMP/emulator.log" 2>/dev/null || true
+          fi
+
+      - name: Upload test results and screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: emulator-${{ matrix.name }}
+          path: |
+            doc-scanner-pdf-android/app/build/reports/androidTests
+            doc-scanner-pdf-android/app/build/outputs/androidTest-results
+            doc-scanner-pdf-android/app/build/outputs/connected_android_test_additional_output
+          retention-days: 14
+          if-no-files-found: ignore
+
+  release:
+    name: Publish the APK (GitHub Release)
+    needs: [sync, web, build, emulator]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    concurrency:
+      group: android-release
+      cancel-in-progress: false
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      publish: ${{ steps.release.outputs.publish }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # release tags
+          persist-credentials: false
+
+      - name: Create the release (only a new version of a changed app)
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          set -euo pipefail
+          d="$(node tools/release/version.js --decide)"
+          action="$(jq -r .action <<<"$d")"; ver="$(jq -r .version <<<"$d")"; tag="$(jq -r .tag <<<"$d")"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          if [ "$action" != "release" ]; then
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            # the current version is already released: the site job makes sure the download page has it
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "### No new release" >> "$GITHUB_STEP_SUMMARY"
+            jq -r .reason <<<"$d" >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=No new release::$(jq -r .reason <<<"$d")"
+            exit 0
+          fi
+          # a public release is always signed with the permanent key — never with the build machine's temporary key
+          if [ "$HAS_KEY" != "true" ]; then
+            msg="v$ver is ready to release, but the permanent signing key is not set (secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD — see README). No release with a temporary key; add them and re-run this workflow."
+            echo "::error title=Signing key::$msg"; echo "### ❌ $msg" >> "$GITHUB_STEP_SUMMARY"; exit 1
+          fi
+          gh run download "$GITHUB_RUN_ID" -n apk -D dist -R "$GITHUB_REPOSITORY"
+          ls -la dist
+          [ -f "dist/doc-scanner-pdf-$ver.apk" ] || { echo "::error::dist/doc-scanner-pdf-$ver.apk not found"; exit 1; }
+          [ -f "dist/doc-scanner-pdf-$ver.aab" ] || { echo "::error::dist/doc-scanner-pdf-$ver.aab not found"; exit 1; }
+          bt="$(for d in $(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V); do [ -x "${d}apksigner" ] && echo "$d"; done | tail -1)"
+          certs="$("${bt}apksigner" verify --print-certs "dist/doc-scanner-pdf-$ver.apk" 2>&1)" || { echo "$certs"; echo "::error::apksigner could not verify the APK"; exit 1; }
+          if grep -q 'CN=Android Debug' <<<"$certs"; then echo "::error::the APK is signed with the debug key — not released"; exit 1; fi
+          src="$(node -p "require('./doc-scanner-pdf-android/source.json').commit")"
+          {
+            echo "แอป Android สแกนเอกสารเป็น PDF — แปลงจาก chatraweechai/doc-scanner-pdf-code@${src:0:12} (doc-scanner-pdf-android@${GITHUB_SHA:0:12})"
+            echo
+            echo "## มีอะไรใหม่"
+            echo
+            jq -r .notes <<<"$d"
+            echo
+            echo "**ติดตั้ง:** ดาวน์โหลด \`doc-scanner-pdf-$ver.apk\` บนมือถือ/แท็บเล็ต Android 8.0 ขึ้นไป แล้วเปิดไฟล์ (อนุญาต \"ติดตั้งแอปที่ไม่รู้จัก\" ให้เบราว์เซอร์ครั้งแรก)"
+            echo
+            echo "หน้าดาวน์โหลด: https://doc-scanner-pdf.github.io/android/"
+            echo
+            echo "\`doc-scanner-pdf-$ver.aab\` คือไฟล์สำหรับอัปโหลดขึ้น Google Play (Android App Bundle) — ติดตั้งบนมือถือโดยตรงไม่ได้"
+            echo
+            echo "เซ็นด้วยกุญแจถาวรของโปรเจกต์ — ติดตั้งทับเวอร์ชันก่อนหน้าได้"
+            echo
+            echo "ทดสอบแล้ว: lint, unit tests, หน้าเว็บในขนาดจอมือถือถึงแท็บเล็ต, parity กับเวอร์ชันเว็บ และแอปจริงบน emulator (มือถือ Android 16, มือถือจอเล็ก Android 14, แท็บเล็ต Android 15)"
+          } > notes.md
+          gh release create "$tag" "dist/doc-scanner-pdf-$ver.apk" "dist/doc-scanner-pdf-$ver.aab" --title "สแกนเอกสาร PDF $ver" --notes-file notes.md --target "$GITHUB_SHA" -R "$GITHUB_REPOSITORY"
+          echo "released=true" >> "$GITHUB_OUTPUT"
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+          echo "### Release $tag" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"
+
+  site:
+    name: Publish the APK on the web site (doc-scanner-pdf/doc-scanner-pdf.github.io)
+    needs: [release]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.release.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    env:
+      APP_VERSION: ${{ needs.release.outputs.version }}
+    concurrency:
+      group: android-site
+      cancel-in-progress: false
+    steps:
+      - name: Checkout doc-scanner-pdf-android
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # release tags: the commit that built the released APK
+          persist-credentials: false
+
+      - name: Key for the site repository
+        env:
+          HAS_KEY: ${{ secrets.SITE_DEPLOY_KEY != '' }}
+        run: |
+          [ "$HAS_KEY" = "true" ] || { echo "::error title=SITE_DEPLOY_KEY::add a deploy key with write access to doc-scanner-pdf/android and its private key as the secret SITE_DEPLOY_KEY here (see README)"; exit 1; }
+
+      - name: The released APK, signed with the permanent key
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$APP_VERSION" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad version '$APP_VERSION'"; exit 1; }
+          # the file of the GitHub Release itself (the page must offer exactly what was released)
+          apk="dist/doc-scanner-pdf-${APP_VERSION}.apk"
+          gh release download "v${APP_VERSION}" -p "doc-scanner-pdf-${APP_VERSION}.apk" -D dist -R "$GITHUB_REPOSITORY"
+          [ -f "$apk" ] || { echo "::error::$apk is not in release v${APP_VERSION}"; ls -la dist; exit 1; }
+          bt="$(for d in $(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V); do [ -x "${d}apksigner" ] && echo "$d"; done | tail -1)"
+          [ -n "$bt" ] || { echo "::error::no apksigner in $ANDROID_HOME/build-tools"; exit 1; }
+          echo "apksigner: ${bt}apksigner"
+          certs="$("${bt}apksigner" verify --print-certs "$apk" 2>&1)" || { echo "$certs"; echo "::error::apksigner could not verify $apk"; exit 1; }
+          grep -E 'Number of signers|certificate (DN|SHA-256 digest)' <<<"$certs" || true
+          digests="$(grep -oE 'certificate SHA-256 digest: [0-9a-f]{64}' <<<"$certs" | awk '{print $NF}' | sort -u)"
+          if [ -z "$digests" ] || [ "$(wc -l <<<"$digests")" != 1 ]; then
+            echo "$certs"; echo "::error::expected exactly one signing certificate"; exit 1
+          fi
+          if grep -q 'CN=Android Debug' <<<"$certs"; then
+            echo "::error::the APK is signed with the debug key; the public site only gets APKs signed with the permanent key"; exit 1
+          fi
+          echo "APK=$apk" >> "$GITHUB_ENV"
+          echo "CERT=$digests" >> "$GITHUB_ENV"
+
+      - name: Checkout the site repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
+          path: site
+          ssh-key: ${{ secrets.SITE_DEPLOY_KEY }}  # deploy key that can write to the site repository only
+          persist-credentials: true  # the next step pushes; removed when the job ends
+
+      - name: Build the download page and push it
+        run: |
+          set -euo pipefail
+          # the commit of the release (it built the APK), and the doc-scanner-pdf-code commit it was converted from
+          rel="$(git rev-list -n1 "v${APP_VERSION}")"
+          src="$(git show "${rel}:doc-scanner-pdf-android/source.json" | jq -r .commit)"
+          [[ "$rel" =~ ^[0-9a-f]{40}$ && "$src" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::cannot read the commits of v${APP_VERSION}"; exit 1; }
+          code="$(node tools/release/version.js | jq -r .code)"
+          if [ -f site/android/version.json ]; then
+            # the page already offers exactly this APK → nothing to publish
+            if [ "$(jq -r .version site/android/version.json)" = "$APP_VERSION" ] &&
+               [ "$(jq -r .sha256 site/android/version.json)" = "$(sha256sum "$APK" | cut -d' ' -f1)" ] &&
+               [ "$(jq -r .appCommit site/android/version.json)" = "$rel" ]; then
+              echo "the site already has doc-scanner-pdf-$APP_VERSION.apk"; exit 0
+            fi
+            # never replace a newer version (an older run finishing late, or a re-run of an old run)
+            cur="$(jq -r '.versionCode' site/android/version.json)"
+            if [[ "$cur" =~ ^[0-9]+$ ]] && [ "$cur" -gt "$code" ]; then
+              echo "::notice::the site already has a newer version ($(jq -r .version site/android/version.json)) — not replaced by $APP_VERSION"; exit 0
+            fi
+          fi
+          node tools/release/version.js --notes notes.md > /dev/null
+          node tools/site/build-page.js --apk "$APK" --out site/android --version "$APP_VERSION" \
+            --cert "$CERT" --source "$src" --app "$rel" --notes notes.md
+          cd site
+          git config user.name "doc-scanner-pdf-android release"
+          git config user.email "doc-scanner-pdf-android-release@users.noreply.github.com"
+          git add -A android
+          if git diff --cached --quiet; then echo "the site already has this APK"; exit 0; fi
+          git commit -q -m "Publish doc-scanner-pdf-android ${APP_VERSION} from doc-scanner-pdf-android@${rel:0:12}" \
+            -m "Signed release APK and its download page, built by the doc-scanner-pdf-android release job after every test passed (doc-scanner-pdf-code@${src:0:12})."
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            sleep 5
+            git pull -q --rebase origin main
+          done
+          git fetch -q origin main
+          [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "::error::could not push to the site repository"; exit 1; }
+          echo "### https://doc-scanner-pdf.github.io/android/" >> "$GITHUB_STEP_SUMMARY"
+          echo "doc-scanner-pdf-${APP_VERSION}.apk published (site commit $(git rev-parse --short HEAD))" >> "$GITHUB_STEP_SUMMARY"
