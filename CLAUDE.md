@@ -4,8 +4,10 @@
 
 This repository is `chatraweechai/doc-scanner-pdf`: the web app and the Android app of doc-scanner-pdf in one repository.
 On 2026-10-22 the owner asked to merge everything (code, files, settings) of `chatraweechai/doc-scanner-pdf-code` and
-`chatraweechai/doc-scanner-pdf-android` into it. Their whole history came along unchanged (same commit ids, tag `v1.0.21`):
-each repository was moved into its folder by a pure-rename commit and merged. Earlier names: `chatrawichai-tech/claude4code`
+`chatraweechai/doc-scanner-pdf-android` into it. Their whole history came along unchanged (same commit ids): each repository was moved into its folder by a
+pure-rename commit and merged. The tag `v1.0.21` could not be pushed from the session (the git proxy refuses tags), so
+releases made before the merge are recorded in `doc-scanner-pdf-android/tools/release/former-releases.json` and count
+as release tags. Earlier names: `chatrawichai-tech/claude4code`
 (named `claude` until 2026-09-28) and `chatrawichai-tech/claude4app` — owner quotes below keep the names they used
 (`claude`/`claude4code` = the web app, `claude4app` = the Android app). The only other linked repository is the web site
 `doc-scanner-pdf/doc-scanner-pdf.github.io` → https://doc-scanner-pdf.github.io/ (clone it next to this repository as
@@ -44,8 +46,8 @@ each repository was moved into its folder by a pure-rename commit and merged. Ea
     older number → CI fails.
   - Releases are always signed with the permanent key: without the `ANDROID_KEYSTORE_*` secrets the release job fails
     with instructions instead of publishing a temporary-key APK (checked by the convert suite). Releases up to v1.0.21 are
-    in `chatraweechai/doc-scanner-pdf-android`; the `site` and Play upload jobs fetch those from there (their tags have
-    no `doc-scanner-pdf-android/` folder), newer ones from this repository.
+    in `chatraweechai/doc-scanner-pdf-android`; the `site` and Play upload jobs fetch those from there
+    (`version.js --release vX.Y.Z` → commit + repository, from `former-releases.json`), newer ones from this repository.
   - After the Release, the `site` job pushes the same APK (refused unless signed with the permanent key) and its
     download page (`tools/site/build-page.js`, relative links only) to the site repository, folder `android/` →
     https://doc-scanner-pdf.github.io/android/, with the write deploy key in the secret `SITE_DEPLOY_KEY`

@@ -406,11 +406,12 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$APP_VERSION" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad version '$APP_VERSION'"; exit 1; }
-          # the file of the GitHub Release itself (the page must offer exactly what was released); a release made before
-          # the merge (its tag has no doc-scanner-pdf-android/ folder) is in the former repository
+          # the file of the GitHub Release itself (the page must offer exactly what was released); releases made before the
+          # merge are in the former repository (tools/release/former-releases.json)
           apk="dist/doc-scanner-pdf-${APP_VERSION}.apk"
-          rel_repo="$GITHUB_REPOSITORY"
-          git cat-file -e "v${APP_VERSION}:doc-scanner-pdf-android/doc-scanner-pdf-android" 2>/dev/null || rel_repo=chatraweechai/doc-scanner-pdf-android
+          r="$(node tools/release/version.js --release "v${APP_VERSION}")"
+          rel_repo="$(jq -r .repo <<<"$r")"; rel_repo="${rel_repo:-$GITHUB_REPOSITORY}"
+          echo "REL_COMMIT=$(jq -r .commit <<<"$r")" >> "$GITHUB_ENV"
           gh release download "v${APP_VERSION}" -p "doc-scanner-pdf-${APP_VERSION}.apk" -D dist -R "$rel_repo"
           [ -f "$apk" ] || { echo "::error::$apk is not in release v${APP_VERSION}"; ls -la dist; exit 1; }
           bt="$(for d in $(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V); do [ -x "${d}apksigner" ] && echo "$d"; done | tail -1)"
@@ -441,7 +442,7 @@ jobs:
           set -euo pipefail
           # the commit of the release (it built the APK), and the web app commit it was converted from (source.json in
           # this folder, or at the top level for a release made before the merge)
-          rel="$(git rev-list -n1 "v${APP_VERSION}")"
+          rel="$REL_COMMIT"
           src="$( { git show "${rel}:./doc-scanner-pdf-android/source.json" 2>/dev/null || git show "${rel}:doc-scanner-pdf-android/source.json"; } | jq -r .commit)"
           [[ "$rel" =~ ^[0-9a-f]{40}$ && "$src" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::cannot read the commits of v${APP_VERSION}"; exit 1; }
           code="$(node tools/release/version.js | jq -r .code)"

@@ -286,6 +286,14 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     newVersion.action === 'release' && newVersion.tag === 'v1.0.17' && newVersion.latest === 'v1.0.16' && /change in 1\.0\.17/.test(newVersion.notes) &&
     fake.action === 'error' && /ปลอม/.test(fake.reason) && older.action === 'error' && /ไม่ใหม่กว่า/.test(older.reason) && empty.action === 'error',
     [first, docsOnly, noVersion, newVersion, fake, older, empty].map(r => r.action).join(' '));
+  // รุ่นก่อนรวม repo: Release อยู่ใน repo เดิม, commit ที่บันทึกไว้อยู่ในประวัติของ repo นี้และใช้แทน tag (ไม่ออก v1.0.21 ซ้ำ)
+  const former = Object.keys(version.FORMER.releases).map(tag => { try { return version.release(ROOT, tag); } catch (e) { return { tag, error: e.message }; } });
+  t.check('releases from before the merge: recorded commits are in this history and count as release tags; their files come from the former repository',
+    former.length >= 1 && former.every(r => /^[0-9a-f]{40}$/.test(r.commit || '') && r.repo === 'chatraweechai/doc-scanner-pdf-android') &&
+    version.FORMER.releases['v1.0.21'] === '792cba0a070c51569340109fdb4bbd5e6caf81dc' &&
+    (workflow.match(/node tools\/release\/version\.js --release/g) || []).length === 1 &&
+    text(path.join(WORKFLOWS, 'play.yml')).includes('node tools/release/version.js --release'),
+    JSON.stringify(former));
   const release = workflow.slice(workflow.indexOf('\n  release:'), workflow.indexOf('\n  site:'));
   t.check('workflow: build fails early on a bad version; release/site only for a new version (tools/release/version.js --decide)',
     (workflow.match(/node tools\/release\/version\.js --decide/g) || []).length === 2 && release.includes('if [ "$action" != "release" ]') &&

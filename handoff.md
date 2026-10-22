@@ -12,7 +12,10 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
 
 ทำแล้ว:
 - **ประวัติ commit ครบ, SHA เดิม**: แต่ละ repo ย้ายไฟล์ทั้งหมดเข้าโฟลเดอร์ของตัวเองด้วย commit ที่เป็นการ rename ล้วน แล้ว merge
-  เข้าด้วยกัน (`git log --follow` ใช้ได้) + tag `v1.0.21` (→ `792cba0`) — commit ต้นทางของแอป `a0577f5` อยู่ในประวัติ
+  เข้าด้วยกัน (`git log --follow` ใช้ได้) — commit ต้นทางของแอป `a0577f5` และ commit ของ v1.0.21 `792cba0` อยู่ในประวัติ
+- **push tag `v1.0.21` ไม่ได้** (git proxy ของ session ตอบ 403 กับ tag) → บันทึกรุ่นก่อนรวม repo ไว้ใน
+  `doc-scanner-pdf-android/tools/release/former-releases.json` (v1.0.21 → `792cba0`, Release อยู่ใน repo Android เดิม) — `version.js`
+  ใช้แทน tag จึงไม่ออก v1.0.21 ซ้ำ; `version.js --release v1.0.21` บอก commit/repo ให้งาน `site` และ Play
 - **ตัวแอปไม่เปลี่ยนแม้แต่ไบต์เดียว** (ไม่มีรุ่นใหม่ปลอม — ยังเป็น v1.0.21): `build.js` บันทึก repo/โฟลเดอร์ต้นทางตามโครงสร้างของ
   commit นั้นเอง (commit ก่อนรวม → `chatraweechai/doc-scanner-pdf-code`; commit ใหม่ → `chatraweechai/doc-scanner-pdf` +
   `doc-scanner-pdf-code/doc-scanner-pdf`) · `version.js` เทียบไฟล์แอปด้วย tree id ข้ามโครงสร้าง → `skip` (v1.0.21 ออกแล้ว แอปไม่เปลี่ยน)
@@ -20,11 +23,12 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
   ปรับ path ทั้งหมด; Android ไม่ checkout repo โค้ดอื่นแล้ว — ใช้ `doc-scanner-pdf-android/tools/ci/source-checkout.sh`
   (git worktree ที่ commit ใน source.json จากประวัติของ repo เอง); `sync` ตรวจทุก push ว่าเว็บแอปของ commit นั้นให้แอปเดียวกัน
 - Release ก่อนรวม (≤ v1.0.21) อยู่ใน `chatraweechai/doc-scanner-pdf-android` → งาน `site` และอัปโหลด Play ดึง APK/AAB จากที่นั่น
-  เมื่อ tag ไม่มีโฟลเดอร์ `doc-scanner-pdf-android/` (รุ่นใหม่ดึงจาก repo นี้)
+  (รุ่นใหม่: GitHub Release ของ repo นี้ — tag สร้างโดย `gh release create` ฝั่ง GitHub)
 - `publish-site.sh` ใช้ได้ทั้ง commit ใหม่และ commit ก่อนรวม; `published-site.yml` เทียบด้วย tree id
 - เอกสาร: `CLAUDE.md` เดียวที่ root (รวมกฎทั้งสอง repo + กฎ 7 ข้อของเจ้าของวันที่ 2026-10-22), `README.md` ที่ root,
   README/PLAY_STORE ของ Android และ README เว็บแอปชี้ repo รวม, CHANGELOG เว็บ 2026-10-22
-- ทดสอบในเครื่อง: Android convert 39/39 (รวมการทดสอบใหม่ 2 ข้อ: ตัดสิน release หลังย้ายโฟลเดอร์, repo ต้นทางตามโครงสร้าง commit),
+- ทดสอบในเครื่อง: Android convert 40/40 (การทดสอบใหม่ 3 ข้อ: ตัดสิน release หลังย้ายโฟลเดอร์, repo ต้นทางตามโครงสร้าง commit,
+  รุ่นก่อนรวม repo),
   play 19/19, `build.js --check` ที่ `a0577f5` OK, `--as-commit` จากเว็บแอปปัจจุบัน OK, `publish-site.sh` ทั้งสองโครงสร้าง OK
 
 ผลทดสอบทั้งหมดและ CI หลัง push: ดูข้อ 0.1

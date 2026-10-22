@@ -1,0 +1,7 @@
+{
+  "comment": "Releases made before the merge into chatraweechai/doc-scanner-pdf (2026-10-22): they are GitHub Releases of the former repository, and their tags cannot be pushed here from a session — version.js uses these commits as the release tags.",
+  "repo": "chatraweechai/doc-scanner-pdf-android",
+  "releases": {
+    "v1.0.21": "792cba0a070c51569340109fdb4bbd5e6caf81dc"
+  }
+}
