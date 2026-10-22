@@ -3,7 +3,8 @@
 **repo หลักตอนนี้คือ `chatraweechai/doc-scanner-pdf`** (repo รวม) — เว็บแอปอยู่ใน `doc-scanner-pdf-code/`, แอป Android อยู่ใน
 `doc-scanner-pdf-android/`, CI ทั้งหมดอยู่ใน `.github/workflows/` · กฎการทำงานของเจ้าของอยู่ใน `CLAUDE.md` (ตอบภาษาไทยเท่านั้น
 ทดสอบจริงก่อน push main, changelog, ห้ามออกเวอร์ชันปลอม, ห้ามส่งกุญแจทางแชต, ห้ามเปลี่ยน package name)
-repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/doc-scanner-pdf-android` ไม่ใช้ทำงานต่อแล้ว (handoff.md ของสอง repo นั้นชี้มาที่นี่)
+repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/doc-scanner-pdf-android` ไม่ใช้ทำงานต่อแล้ว — CLAUDE.md และ handoff.md
+ของสอง repo นั้นชี้มาที่นี่ (handoff.md เต็มอยู่ที่นี่ที่เดียว ไม่ต้องคัดลอกไปอีก)
 
 ## 0. ความคืบหน้า (session 2026-10-22)
 
@@ -43,7 +44,10 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
 
 - ในเครื่อง: เว็บ 10/10 ชุดผ่าน (cache-busting 26 รวมการเผยแพร่เว็บจาก repo รวม, detect 7, e2e 26, edge 33, formats 8, i18n 35,
   motion 25, ocr 14, pdf-convert 55, searchable-pdf 23); Android convert 40/40, play 19/19
-- CI `af652e4`: งาน sync (แอป Android = เว็บแอปที่แปลงแล้ว) ✓ — ที่เหลือ (อัปเดตท้าย session)
+- CI `6c3cda7` Web tests ✓ (run 39797985196)
+- CI `b5742a8` Android (run 39799081743): ✓ sync, ✓ page tests (convert, webview, screens, parity, play), ✓ build/lint/unit tests/APK/AAB,
+  ✓ emulator phone, small-phone, tablet, ✓ release = "v1.0.21 ออกไปแล้ว และแอปไม่เปลี่ยน — ไม่ออกรุ่นใหม่" (ไม่ออกซ้ำ),
+  ✗ `site` ล้มที่ขั้นแรกเพราะ repo รวมยังไม่มี secret `SITE_DEPLOY_KEY` (ข้อ 1.1 — คาดไว้แล้ว ไม่ใช่บั๊ก)
 - CI `6c3cda7` (push แรก): งาน release คาดว่าล้ม (ยังไม่มี `former-releases.json` → ตัดสินว่า "รุ่นแรก" แต่ไม่มีกุญแจ → ไม่ออก Release
   ตามที่ออกแบบไว้) — แก้แล้วใน `af652e4`
 
