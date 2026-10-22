@@ -6,7 +6,7 @@
 โดยโค้ดของแอปเหมือนเวอร์ชันเว็บทุกไบต์
 
 repo นี้คือ `chatraweechai/doc-scanner-pdf-android` — กู้คืนเมื่อ 2026-10-01 จาก `chatrawichai-tech/claude4app` (บัญชีเดิมใช้ไม่ได้แล้ว);
-repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น `doc-scanner-pdf/doc-scanner-pdf.github.io`
+repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น [`doc-scanner-pdf/doc-scanner-pdf.github.io`](https://github.com/doc-scanner-pdf/android) (โฟลเดอร์ `android`)
 
 - ทำงานในเครื่องทั้งหมด **ไม่ต้องใช้อินเทอร์เน็ต** (แอปไม่ขอสิทธิ์อินเทอร์เน็ตเลย) — ภาพเอกสารไม่ถูกส่งไปที่ใด
 - **กล้องในแอป** ถ่ายหลายหน้าต่อเนื่องพร้อมกรอบตรวจจับเอกสารแบบสด หรือใช้ **กล้องของเครื่อง** / **เลือกรูปภาพ**
@@ -68,8 +68,8 @@ repo ต้นทาง `chatraweechai/doc-scanner-pdf-code` (เดิม `chat
 
 ## หน้าดาวน์โหลดบนเว็บไซต์ (ทำครั้งเดียว — สำหรับเจ้าของ repo)
 
-หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `doc-scanner-pdf/doc-scanner-pdf.github.io`
-(เดิม `chatrawichai-tech/chatrawichai-tech.github.io`) โฟลเดอร์ `android/`
+หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `doc-scanner-pdf/doc-scanner-pdf.github.io` (โฟลเดอร์ `android`)
+(เดิม `chatrawichai-tech/chatrawichai-tech.github.io`)
 → https://doc-scanner-pdf.github.io/android/
 (`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์, APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`,
 `version.json` พร้อม SHA-256 และลายนิ้วมือใบรับรอง) — งานนี้ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว
