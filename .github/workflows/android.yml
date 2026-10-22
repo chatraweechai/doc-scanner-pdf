@@ -393,7 +393,7 @@ jobs:
           echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"
 
   site:
-    name: Publish the APK on the web site (doc-scanner-pdf/doc-scanner-pdf.github.io)
+    name: Publish the APK on the web site (doc-scanner-pdf/android)
     needs: [release]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.release.outputs.publish == 'true'
     runs-on: ubuntu-latest
@@ -417,7 +417,7 @@ jobs:
         env:
           HAS_KEY: ${{ secrets.SITE_DEPLOY_KEY != '' }}
         run: |
-          [ "$HAS_KEY" = "true" ] || { echo "::error title=SITE_DEPLOY_KEY::add a deploy key with write access to doc-scanner-pdf/doc-scanner-pdf.github.io and its private key as the secret SITE_DEPLOY_KEY here (see README)"; exit 1; }
+          [ "$HAS_KEY" = "true" ] || { echo "::error title=SITE_DEPLOY_KEY::add a deploy key with write access to doc-scanner-pdf/android and its private key as the secret SITE_DEPLOY_KEY here (see README)"; exit 1; }
 
       - name: The released APK, signed with the permanent key
         env:
@@ -447,7 +447,7 @@ jobs:
       - name: Checkout the site repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
+          repository: doc-scanner-pdf/android
           path: site
           ssh-key: ${{ secrets.SITE_DEPLOY_KEY }}  # deploy key that can write to the site repository only
           persist-credentials: true  # the next step pushes; removed when the job ends
