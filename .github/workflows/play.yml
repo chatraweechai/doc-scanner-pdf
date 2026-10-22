@@ -71,7 +71,9 @@ jobs:
           persist-credentials: false
 
       - name: The web app at the source commit
-        run: echo "CLAUDE4CODE_SRC=$(tools/ci/source-checkout.sh "$RUNNER_TEMP/code-src")" >> "$GITHUB_ENV"
+        run: |
+          src="$(tools/ci/source-checkout.sh "$RUNNER_TEMP/code-src")"  # fails the step if the checkout fails
+          echo "CLAUDE4CODE_SRC=$src" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0

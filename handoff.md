@@ -33,9 +33,19 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
 
 ผลทดสอบทั้งหมดและ CI หลัง push: ดูข้อ 0.1
 
+- เจ้าของเพิ่ม `.claude/settings.json` (อนุญาต `git tag -a v*`, `git push origin v*`) — ลอง push tag `v1.0.21` อีกครั้งแล้วยังได้ 403
+  จาก git proxy (ไม่ใช่สิทธิ์ของ Claude Code) จึงใช้ `former-releases.json` ต่อ; ถ้าเจ้าของ push tag เองจากเครื่อง
+  (`git fetch https://github.com/chatraweechai/doc-scanner-pdf-android v1.0.21:refs/tags/v1.0.21 && git push origin v1.0.21`) ก็ใช้ได้เหมือนกัน
+- review รอบหลัง push: ขั้น "The web app at the source commit" ใน `android.yml`/`play.yml` เดิมไม่ล้มเมื่อ `source-checkout.sh` ล้ม
+  (`echo "$(…)"` กลืน exit code) → แก้ให้ล้มทันที
+
 ### 0.1 ผลทดสอบ/CI
 
-- (อัปเดตท้าย session)
+- ในเครื่อง: เว็บ 10/10 ชุดผ่าน (cache-busting 26 รวมการเผยแพร่เว็บจาก repo รวม, detect 7, e2e 26, edge 33, formats 8, i18n 35,
+  motion 25, ocr 14, pdf-convert 55, searchable-pdf 23); Android convert 40/40, play 19/19
+- CI `af652e4`: งาน sync (แอป Android = เว็บแอปที่แปลงแล้ว) ✓ — ที่เหลือ (อัปเดตท้าย session)
+- CI `6c3cda7` (push แรก): งาน release คาดว่าล้ม (ยังไม่มี `former-releases.json` → ตัดสินว่า "รุ่นแรก" แต่ไม่มีกุญแจ → ไม่ออก Release
+  ตามที่ออกแบบไว้) — แก้แล้วใน `af652e4`
 
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
 
