@@ -54,11 +54,18 @@ function decide(repo) {
   const tag = 'v' + info.version;
   const tags = git(['tag', '-l', 'v*']).split('\n').filter(t => /^v\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(t));
   const latest = tags.slice().sort((a, b) => cmp(nums(a.slice(1)), nums(b.slice(1)))).pop() || '';
-  const changedSince = ref => {
-    try { git(['diff', '--quiet', ref, 'HEAD', '--'].concat(APP_PATHS)); return false; } catch (e) {
-      if (e.status === 1) return true;
-      fail(`เทียบกับ ${ref} ไม่ได้: ${String(e.stderr || e.message).trim()}`);
+  // ไฟล์แอปที่ ref เทียบด้วย id ของ tree/blob: ในโฟลเดอร์นี้ของ repo รวม chatraweechai/doc-scanner-pdf หรือ tag ก่อนรวม repo
+  // (2026-10-22, chatraweechai/doc-scanner-pdf-android ที่โฟลเดอร์นี้อยู่บนสุด) — ย้ายโฟลเดอร์อย่างเดียวไม่นับว่าแอปเปลี่ยน
+  const prefix = git(['rev-parse', '--show-prefix']);
+  const object = (ref, p) => {
+    for (const pre of new Set([prefix, ''])) {
+      try { return git(['rev-parse', '--verify', '--quiet', `${ref}:${pre}${p}`]); } catch (e) { /* ไม่มีในโครงสร้างนี้ */ }
     }
+    return '';
+  };
+  const changedSince = ref => {
+    try { git(['rev-parse', '--verify', '--quiet', ref + '^{commit}']); } catch (e) { fail(`เทียบกับ ${ref} ไม่ได้: ไม่พบ commit`); }
+    return APP_PATHS.some(p => object(ref, p) !== object('HEAD', p));
   };
   if (tags.includes(tag)) {
     if (changedSince(tag)) fail(`แอปเปลี่ยนตั้งแต่ ${tag} แต่ CHANGELOG.md ยังเป็น v${info.version} — เพิ่มรุ่นใหม่ (## v…) พร้อมรายการการเปลี่ยนแปลง`);

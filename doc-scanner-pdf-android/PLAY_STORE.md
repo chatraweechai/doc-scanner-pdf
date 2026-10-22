@@ -41,7 +41,7 @@
 
 ## 3. อัปโหลดไฟล์แอปครั้งแรก (ต้องทำใน Console เอง — API ใช้ได้หลังแอปมีไฟล์แรกแล้ว)
 
-1. ดาวน์โหลด `doc-scanner-pdf-1.0.N.aab` รุ่นล่าสุดจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf-android/releases)
+1. ดาวน์โหลด `doc-scanner-pdf-1.0.N.aab` รุ่นล่าสุดจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf/releases) (รุ่นจนถึง v1.0.21: [repo เดิม](https://github.com/chatraweechai/doc-scanner-pdf-android/releases))
    (ล็อกอิน GitHub) — ไฟล์ `.aab` ติดตั้งบนมือถือไม่ได้ ใช้อัปโหลดขึ้น Play เท่านั้น
 2. **Test and release → Testing → Internal testing → Create new release**
 3. **App signing** — กด **Choose signing key → Use Google-generated key** (แนะนำ: Google เก็บกุญแจเซ็นแอปที่ส่งถึงผู้ใช้,
@@ -100,7 +100,7 @@
 
 ## 7. ใส่กุญแจเป็น GitHub secret (ครั้งเดียว)
 
-repo **doc-scanner-pdf-android** → Settings → Secrets and variables → Actions → **New repository secret**
+repo **chatraweechai/doc-scanner-pdf** (repo รวม) → Settings → Secrets and variables → Actions → **New repository secret**
 - Name: `PLAY_SERVICE_ACCOUNT_JSON`
 - Secret: เปิดไฟล์ `.json` จากขั้นที่ 6 ด้วยโปรแกรมแก้ข้อความ คัดลอก **ทั้งไฟล์** มาวาง → Add secret
 - จากนั้น **ลบไฟล์ `.json` ในเครื่อง** — ห้ามส่งทางแชต/อีเมล/commit เข้า repo
@@ -109,7 +109,7 @@ workflow ส่งกุญแจนี้ให้ขั้นตอนอั�
 
 ## 8. อัปโหลดด้วย workflow
 
-repo **doc-scanner-pdf-android** → **Actions → Google Play → Run workflow** (branch `main`):
+repo **chatraweechai/doc-scanner-pdf** → **Actions → Google Play → Run workflow** (branch `main`):
 
 | ตัวเลือก | ใช้เมื่อ |
 |---|---|

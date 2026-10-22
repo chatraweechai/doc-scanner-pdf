@@ -2,11 +2,14 @@
 
 แอป Android (มือถือและแท็บเล็ต) ที่แปลงภาพถ่ายเอกสารเป็นไฟล์ PDF: ครอปอัตโนมัติตามขอบกระดาษหรือครอปเองอิสระ,
 ปรับแสง, ลบเงา, โหมดสีสดคมชัด/ขาวดำตัวอักษรคม, แปลงภาพเป็นข้อความ (OCR ไทย + อังกฤษ) และ PDF ที่ค้นหาข้อความได้
-— แปลงอัตโนมัติจากเว็บแอป [`chatraweechai/doc-scanner-pdf-code`](https://github.com/chatraweechai/doc-scanner-pdf-code) (โฟลเดอร์ `doc-scanner-pdf`)
+— แปลงอัตโนมัติจากเว็บแอปในโฟลเดอร์ [`../doc-scanner-pdf-code`](../doc-scanner-pdf-code) (โฟลเดอร์ `doc-scanner-pdf`)
 โดยโค้ดของแอปเหมือนเวอร์ชันเว็บทุกไบต์
 
-repo นี้คือ `chatraweechai/doc-scanner-pdf-android` — กู้คืนเมื่อ 2026-10-01 จาก `chatrawichai-tech/claude4app` (บัญชีเดิมใช้ไม่ได้แล้ว);
-repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pdf-code` และเว็บไซต์เป็น [`https://doc-scanner-pdf.github.io/android`](https://doc-scanner-pdf.github.io/android)
+โฟลเดอร์นี้คือแอป Android ใน repo รวม [`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf)
+(รวมเมื่อ 2026-10-22 จาก `chatraweechai/doc-scanner-pdf-android` เดิม — ประวัติ commit และ tag ยังอยู่ครบ, Release จนถึง v1.0.21 อยู่ที่
+[repo เดิม](https://github.com/chatraweechai/doc-scanner-pdf-android/releases)) — คำสั่งในไฟล์นี้รันในโฟลเดอร์นี้
+(`doc-scanner-pdf-android/`) ส่วน CI อยู่ที่ `../.github/workflows/` ของ repo รวม; หน้าดาวน์โหลดอยู่ที่
+[`https://doc-scanner-pdf.github.io/android`](https://doc-scanner-pdf.github.io/android)
 
 - ทำงานในเครื่องทั้งหมด **ไม่ต้องใช้อินเทอร์เน็ต** (แอปไม่ขอสิทธิ์อินเทอร์เน็ตเลย) — ภาพเอกสารไม่ถูกส่งไปที่ใด
 - **กล้องในแอป** ถ่ายหลายหน้าต่อเนื่องพร้อมกรอบตรวจจับเอกสารแบบสด หรือใช้ **กล้องของเครื่อง** / **เลือกรูปภาพ**
@@ -23,7 +26,8 @@ repo ต้นทาง `claude4code` เป็น `chatraweechai/doc-scanner-pd
 
 1. เปิดหน้า **https://doc-scanner-pdf.github.io/android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
    แล้วกดดาวน์โหลด `doc-scanner-pdf-1.0.<เลข>.apk` — หน้านี้มีเฉพาะรุ่นล่าสุดที่เซ็นด้วยกุญแจถาวร พร้อมรายการ "มีอะไรใหม่"
-   (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf-android/releases) ของ repo นี้)
+   (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf/releases) ของ repo รวม — รุ่นจนถึง v1.0.21 อยู่ใน
+   [Releases ของ repo เดิม](https://github.com/chatraweechai/doc-scanner-pdf-android/releases))
 2. เปิดไฟล์ที่ดาวน์โหลด — ครั้งแรก Android จะให้อนุญาต "ติดตั้งแอปที่ไม่รู้จัก" ให้เบราว์เซอร์ที่ใช้ดาวน์โหลด
 3. เปิดแอป **สแกนเอกสาร PDF** — ครั้งแรกที่ใช้กล้องในแอป Android จะถามสิทธิ์กล้อง
 
@@ -48,7 +52,7 @@ base64 -w0 doc-scanner-release.jks > keystore.b64     # macOS: base64 -i doc-sca
 # [Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\doc-scanner-release.jks")) | Set-Clipboard
 ```
 
-แล้วเพิ่ม **Repository secrets** 4 รายการที่ Settings → Secrets and variables → Actions → Secrets ของ repo นี้:
+แล้วเพิ่ม **Repository secrets** 4 รายการที่ Settings → Secrets and variables → Actions → Secrets ของ repo รวม `chatraweechai/doc-scanner-pdf`:
 
 | ชื่อ                        | ค่า                                                          |
 | --------------------------- | ------------------------------------------------------------ |
@@ -60,11 +64,10 @@ base64 -w0 doc-scanner-release.jks > keystore.b64     # macOS: base64 -i doc-sca
 CI ส่ง secrets เหล่านี้ให้เฉพาะขั้นตอน build ของ `main` ที่จะออก Release (push หรือ Run workflow) และลบไฟล์กุญแจทันทีหลังใช้
 — build ของ branch อื่น, pull request และรอบตรวจรายวันไม่ได้รับกุญแจ (APK ของรอบเหล่านั้นเซ็นด้วยกุญแจ debug)
 
-## การเข้าถึง repo doc-scanner-pdf-code จาก CI
+## เว็บแอปต้นทางใน CI
 
-repo ต้นทาง `chatraweechai/doc-scanner-pdf-code` (เดิม `chatrawichai-tech/claude4code`) เป็น public — CI อ่านโค้ดต้นทางได้โดยไม่ต้องตั้งค่าอะไร
-ถ้าภายหลังเปลี่ยน repo นั้นเป็น private ให้สร้าง deploy key แบบอ่านอย่างเดียวและใส่เป็น secret `CLAUDE_REPO_KEY` ของ repo นี้
-— CI ใช้กุญแจนั้นเมื่อมีเท่านั้น
+เว็บแอปต้นทางอยู่ใน repo เดียวกัน (`../doc-scanner-pdf-code`) — CI ดึงเว็บแอปที่ commit ใน `doc-scanner-pdf-android/source.json` จากประวัติของ
+repo เอง (`tools/ci/source-checkout.sh`) ไม่ต้องใช้กุญแจหรือ repo อื่น (commit ก่อนรวม repo ก็อยู่ในประวัติ)
 
 ## หน้าดาวน์โหลดบนเว็บไซต์ (ทำครั้งเดียว — สำหรับเจ้าของ repo)
 
@@ -82,7 +85,7 @@ repo ต้นทาง `chatraweechai/doc-scanner-pdf-code` (เดิม `chat
    ```
 2. repo **doc-scanner-pdf** (เว็บไซต์) → Settings → **Deploy keys** → **Add deploy key**: Title `doc-scanner-pdf-android release (APK)`,
    Key = เนื้อหาไฟล์ `site_deploy_key.pub` — **ติ๊ก Allow write access**
-3. repo **doc-scanner-pdf-android** (repo นี้) → Settings → Secrets and variables → Actions → **New repository secret**:
+3. repo **chatraweechai/doc-scanner-pdf** (repo รวม) → Settings → Secrets and variables → Actions → **New repository secret**:
    ชื่อ `SITE_DEPLOY_KEY` ค่า = เนื้อหาไฟล์ `site_deploy_key` ทั้งหมด (รวมบรรทัด `-----BEGIN…` และ `-----END…`)
 4. ลบไฟล์กุญแจทั้งสองในเครื่องได้เลย
 
@@ -112,15 +115,15 @@ doc-scanner-pdf-android/                 โปรเจกต์ Android (เ�
   app/src/main/java/.../BridgeProtocol.kt, TransferStore.kt, FileNames.kt   รับไฟล์จากหน้าเว็บอย่างปลอดภัย
   app/src/test/                          unit tests (JUnit)
   app/src/androidTest/                   ทดสอบแอปจริงบน emulator
-  source.json                            commit ต้นทางใน repo doc-scanner-pdf-code + SHA-256 ของทุกไฟล์ต้นทาง
+  source.json                            commit ต้นทางของเว็บแอป + SHA-256 ของทุกไฟล์ต้นทาง
 tools/convert/build.js                   ตัวแปลง doc-scanner-pdf-code → Android (templates/platform.js = AppPlatform ของ Android)
 tools/tests/                             ทดสอบหน้าเว็บของแอปใน Chromium: convert, webview, screens, parity, play
 tools/site/build-page.js                 หน้าดาวน์โหลด APK + นโยบายความเป็นส่วนตัว (privacy.html) บน doc-scanner-pdf.github.io/android/
 tools/store/                             หน้าร้าน Google Play: ข้อความไทย/อังกฤษ (listing/), รูปหน้าร้าน (build.js), วิดีโอโปรโมต (video.js)
 tools/play/publish.js                    อัปโหลดแอป + หน้าร้านขึ้น Google Play (Android Publisher API)
-tools/ci/                                สคริปต์ของ CI (ตรวจ Gradle wrapper, เปิด emulator)
-.github/workflows/android.yml            CI: sync → ทดสอบ → build → emulator → Release → หน้าดาวน์โหลดบนเว็บไซต์
-.github/workflows/play.yml               Google Play (กดรันเอง): รูปหน้าร้าน/วิดีโอ → อัปโหลดขึ้น Play — ขั้นตอนทั้งหมดใน PLAY_STORE.md
+tools/ci/                                สคริปต์ของ CI (ตรวจ Gradle wrapper, เปิด emulator, ดึงเว็บแอปที่ commit ต้นทาง)
+../.github/workflows/android.yml         CI: sync → ทดสอบ → build → emulator → Release → หน้าดาวน์โหลดบนเว็บไซต์
+../.github/workflows/play.yml            Google Play (กดรันเอง): รูปหน้าร้าน/วิดีโอ → อัปโหลดขึ้น Play — ขั้นตอนทั้งหมดใน PLAY_STORE.md
 ```
 
 ## Google Play
@@ -134,21 +137,22 @@ node tools/store/build.js            # tools/store/out/<th|en-US>/: icon, featur
 node tools/store/video.js            # tools/store/out/<th|en-US>/promo.mp4 (ต้องมี ffmpeg; FFMPEG=<path> ถ้าไม่อยู่ใน PATH)
 ```
 
-## อัปเดตตาม repo doc-scanner-pdf-code
+## อัปเดตตามเว็บแอป (doc-scanner-pdf-code)
 
 ```bash
-git clone https://github.com/chatraweechai/doc-scanner-pdf-code ../doc-scanner-pdf-code     # ถ้ายังไม่มี
-node tools/convert/build.js --source ../doc-scanner-pdf-code                      # แปลงใหม่ (repo ต้นทางต้อง commit แล้ว)
-cd tools/tests && npm ci --ignore-scripts && npx playwright install chromium && node run-all.js
+node tools/convert/build.js --source ../doc-scanner-pdf-code                      # แปลงใหม่ (เว็บแอปต้อง commit แล้ว)
+cd tools/tests && npm ci --ignore-scripts && npx playwright install chromium
+CLAUDE4CODE_SRC="$(../ci/source-checkout.sh /tmp/code-src)" node run-all.js       # ทดสอบกับเว็บแอปที่ commit ใน source.json
+git worktree remove /tmp/code-src
 cd ../../doc-scanner-pdf-android && ./gradlew lintDebug testDebugUnitTest assembleDebug
 ```
 
-ก่อนแปลง ตรวจก่อนว่าการเปลี่ยนแปลงใน doc-scanner-pdf-code ทำให้แอปต่างจากเดิมหรือไม่:
+ก่อนแปลง ตรวจก่อนว่าการเปลี่ยนแปลงของเว็บแอปทำให้แอปต่างจากเดิมหรือไม่:
 `node tools/convert/build.js --source ../doc-scanner-pdf-code --check --as-commit <commit ใน doc-scanner-pdf-android/source.json>`
-— ถ้า OK (เช่น แก้แค่ README/ชุดทดสอบของ doc-scanner-pdf-code) **ไม่ต้องแปลง ไม่ต้อง commit** และไม่มีรุ่นใหม่
+— ถ้า OK (เช่น แก้แค่ README/ชุดทดสอบของเว็บ) **ไม่ต้องแปลง ไม่ต้อง commit** และไม่มีรุ่นใหม่
 
 ถ้าแอปเปลี่ยน: เพิ่มรุ่นใหม่ที่หัว [`CHANGELOG.md`](CHANGELOG.md) (`## v1.0.<เลขถัดไป> — วันที่` + รายการการเปลี่ยนแปลง)
-แล้ว commit/push `main` — CI ตรวจความสอดคล้องกับ repo doc-scanner-pdf-code, ทดสอบบน emulator มือถือและแท็บเล็ต
+แล้ว commit/push `main` — CI ตรวจความสอดคล้องกับเว็บแอป, ทดสอบบน emulator มือถือและแท็บเล็ต
 แล้วออก Release และหน้าดาวน์โหลดรุ่นใหม่ให้อัตโนมัติ
 
 **เลขรุ่น (versionName/versionCode) มาจากหัวข้อบนสุดของ CHANGELOG.md** (`tools/release/version.js`):
@@ -157,7 +161,7 @@ cd ../../doc-scanner-pdf-android && ./gradlew lintDebug testDebugUnitTest assemb
 - แก้แค่ CI/ชุดทดสอบ/เอกสาร → ไม่ออกรุ่นใหม่ (ไม่มี Release ซ้ำของเดิม)
 - แอปเปลี่ยนแต่ไม่เพิ่มรุ่นใหม่ หรือเพิ่มรุ่นใหม่แต่แอปไม่เปลี่ยน (รุ่นปลอม) → CI ไม่ผ่านตั้งแต่ขั้น build
 
-CI ยังตรวจทุกวันว่ามีการเปลี่ยนแปลงใน repo doc-scanner-pdf-code ที่ทำให้แอปต่างไปแต่ยังไม่ได้แปลงหรือไม่
+CI (ทุก push และทุกวัน) ตรวจว่ามีการเปลี่ยนแปลงของเว็บแอปที่ทำให้แอปต่างไปแต่ยังไม่ได้แปลงหรือไม่
 
 ## Build เอง
 

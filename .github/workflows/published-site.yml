@@ -1,0 +1,58 @@
+# The public web site is published from this repository to doc-scanner-pdf/doc-scanner-pdf.github.io (GitHub Pages user site):
+# doc-scanner-pdf-code/tools/publish-site.sh writes doc-scanner-pdf/ there → https://doc-scanner-pdf.github.io/doc-scanner-pdf/
+#
+# Daily check (and on demand) that the published folder is exactly publish-site.sh's output for its commit
+# and that the web app (doc-scanner-pdf-code/doc-scanner-pdf/) has not changed on main since then (nothing left
+# unpublished). Commits from before the merge into this repository (chatraweechai/doc-scanner-pdf-code, app at the
+# top level) are part of the history, so a site published from them is checked the same way.
+# The site repository is public, so it is read without credentials. Actions are pinned to full commit SHAs.
+name: Published site
+
+on:
+  schedule:
+    - cron: '41 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published:
+    name: The site repository serves the latest doc-scanner-pdf
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout (all history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout the site repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
+          path: site
+          persist-credentials: false
+
+      - name: Published folder = publish-site.sh output, and up to date with main
+        run: |
+          set -euo pipefail
+          published="$(jq -r '.commit // empty' site/doc-scanner-pdf/version.json)"
+          [[ "$published" =~ ^[0-9a-f]{12}$ ]] || { echo "::error::site doc-scanner-pdf/version.json has no build commit"; exit 1; }
+          commit="$(git rev-parse --verify --quiet "${published}^{commit}")" || { echo "::error::published build ${published} is not a commit of this repository"; exit 1; }
+          app=doc-scanner-pdf-code/doc-scanner-pdf
+          # the web app at the published commit: in its folder, or at the top level before the merge
+          tree="$(git rev-parse --verify --quiet "$commit:$app" || git rev-parse --verify --quiet "$commit:doc-scanner-pdf")" ||
+            { echo "::error::no web app at the published build ${published}"; exit 1; }
+          if [ "$tree" != "$(git rev-parse HEAD:$app)" ]; then
+            echo "::error::the web app changed on main since the published build ${published} — publish it (see CLAUDE.md):"
+            git log --oneline "$commit..HEAD" -- "$app"
+            exit 1
+          fi
+          doc-scanner-pdf-code/tools/publish-site.sh --commit "$commit" "$RUNNER_TEMP/expected"
+          if ! diff -r "$RUNNER_TEMP/expected" site/doc-scanner-pdf; then
+            echo "::error::the published folder is not tools/publish-site.sh's output for ${published}"
+            exit 1
+          fi
+          echo "doc-scanner-pdf/doc-scanner-pdf.github.io: doc-scanner-pdf/ is doc-scanner-pdf@${published}; the web app is unchanged on main since then"

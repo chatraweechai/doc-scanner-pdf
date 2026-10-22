@@ -1,18 +1,17 @@
-# Browser tests for doc-scanner-pdf (tools/tests, Playwright + Chromium).
-# Runs on every push/PR that touches the app or the tests. The web site is published from a passing commit to
-# doc-scanner-pdf/doc-scanner-pdf.github.io with tools/publish-site.sh (see CLAUDE.md, published-site.yml).
-name: Tests
+# Browser tests of the web app (doc-scanner-pdf-code/tools/tests, Playwright + Chromium).
+# Runs on every push/PR that touches the web app or its tools. The web site is published from a passing commit to
+# doc-scanner-pdf/doc-scanner-pdf.github.io with doc-scanner-pdf-code/tools/publish-site.sh (see CLAUDE.md,
+# published-site.yml). The Android app has its own workflow (android.yml).
+name: Web tests
 
 on:
   push:
     paths:
-      - 'doc-scanner-pdf/**'
-      - 'tools/**'
+      - 'doc-scanner-pdf-code/**'
       - '.github/workflows/tests.yml'
   pull_request:
     paths:
-      - 'doc-scanner-pdf/**'
-      - 'tools/**'
+      - 'doc-scanner-pdf-code/**'
       - '.github/workflows/tests.yml'
   workflow_dispatch:
 
@@ -25,7 +24,7 @@ jobs:
     timeout-minutes: 45
     defaults:
       run:
-        working-directory: tools/tests
+        working-directory: doc-scanner-pdf-code/tools/tests
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -37,10 +36,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: tools/tests/package-lock.json
+          cache-dependency-path: doc-scanner-pdf-code/tools/tests/package-lock.json
 
       - name: Verify vendored libraries (SHA-256)
-        working-directory: doc-scanner-pdf/vendor
+        working-directory: doc-scanner-pdf-code/doc-scanner-pdf/vendor
         run: |
           # every library folder must list its files in SHA256SUMS (a new library cannot skip the check)
           for d in */; do
@@ -65,7 +64,7 @@ jobs:
         with:
           name: test-output
           path: |
-            tools/tests/out
-            !tools/tests/out/site-*
+            doc-scanner-pdf-code/tools/tests/out
+            !doc-scanner-pdf-code/tools/tests/out/site-*
           retention-days: 7
           if-no-files-found: ignore

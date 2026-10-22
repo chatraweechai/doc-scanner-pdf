@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * แปลงเว็บแอป doc-scanner-pdf (repo chatraweechai/doc-scanner-pdf-code เดิมคือ chatrawichai-tech/claude4code) เป็นไฟล์หน้าเว็บในแอป Android
+ * แปลงเว็บแอป doc-scanner-pdf (โฟลเดอร์ doc-scanner-pdf-code/ ของ repo chatraweechai/doc-scanner-pdf — ก่อน 2026-10-22 คือ repo
+ * chatraweechai/doc-scanner-pdf-code) เป็นไฟล์หน้าเว็บในแอป Android — คำสั่งด้านล่างรันในโฟลเดอร์ doc-scanner-pdf-android/
  *
  *   node tools/convert/build.js --source ../doc-scanner-pdf-code            สร้าง/อัปเดตไฟล์ใน doc-scanner-pdf-android/
  *   node tools/convert/build.js --source ../doc-scanner-pdf-code --check    ตรวจว่าไฟล์ใน repo ตรงกับผลการแปลง (ใช้ใน CI)
@@ -9,7 +10,7 @@
  *        แปลงไฟล์ปัจจุบันของ doc-scanner-pdf-code แต่ใช้ชื่อ commit เดิม — OK = แอปไม่เปลี่ยน ไม่ต้องแปลง/commit/release ใหม่
  *        (เจ้าของ repo สั่ง: การเปลี่ยนแปลงที่ไม่ทำให้แอปต่างจากเดิมห้ามสร้าง release ซ้ำหรือเวอร์ชันใหม่ปลอม)
  *
- * ผลลัพธ์ (สร้างใหม่ทั้งหมด ห้ามแก้เอง — แก้ที่ repo doc-scanner-pdf-code หรือ tools/convert/templates แล้วแปลงใหม่):
+ * ผลลัพธ์ (สร้างใหม่ทั้งหมด ห้ามแก้เอง — แก้ที่ ../doc-scanner-pdf-code หรือ tools/convert/templates แล้วแปลงใหม่):
  *   doc-scanner-pdf-android/app/src/main/assets/www/   หน้าเว็บของแอป: โค้ด CSS/JS ของ doc-scanner-pdf-code ไม่แก้แม้แต่ไบต์เดียว
  *                                                      + ไลบรารีใน vendor/ (ตรวจ SHA256SUMS) + android/platform.js
  *   doc-scanner-pdf-android/source.json                commit ต้นทาง + SHA-256 ของทุกไฟล์ต้นทาง
@@ -26,11 +27,14 @@ const ROOT = path.resolve(__dirname, '../..');
 const TEMPLATES = path.join(__dirname, 'templates');
 const PROJECT = 'doc-scanner-pdf-android';
 const WWW = 'app/src/main/assets/www';
-// ชื่อ repo ต้นทางที่บันทึกไว้ในแอป (android/platform.js, source.json) — ยังเป็นชื่อเดิมของ commit ที่แอปรุ่นปัจจุบันแปลงมา
-// repo นี้ย้ายมาเป็น chatraweechai/doc-scanner-pdf-code เมื่อ 2026-10-01: เปลี่ยนค่านี้เป็น 'chatraweechai/doc-scanner-pdf-code' พร้อมกับ
-// การเปลี่ยนแอปจริงครั้งถัดไป (เปลี่ยนแค่ชื่อจะทำให้ไฟล์แอปต่างไปทั้งที่แอปไม่เปลี่ยน = รุ่นใหม่ปลอม — เจ้าของห้ามเด็ดขาด)
-const SOURCE_REPO = 'chatraweechai/doc-scanner-pdf-code';
 const APP_DIR = 'doc-scanner-pdf';
+// ที่มาของ commit ที่บันทึกไว้ในแอป (android/platform.js, source.json) ดูจากโครงสร้างของ commit นั้นเอง:
+// repo รวม chatraweechai/doc-scanner-pdf (เว็บแอปอยู่ใน doc-scanner-pdf-code/) หรือ commit ก่อนรวม repo เมื่อ 2026-10-22
+// (chatraweechai/doc-scanner-pdf-code, เว็บแอปอยู่บนสุด) — บันทึกตามจริงของแต่ละ commit การรวม repo จึงไม่ทำให้ไฟล์แอปเปลี่ยน
+// (ไฟล์แอปเปลี่ยนทั้งที่แอปไม่เปลี่ยน = รุ่นใหม่ปลอม — เจ้าของห้ามเด็ดขาด)
+const MONO_REPO = 'chatraweechai/doc-scanner-pdf';
+const MONO_DIR = 'doc-scanner-pdf-code';
+const LEGACY_REPO = 'chatraweechai/doc-scanner-pdf-code';
 // ชนิดไฟล์ที่เสิร์ฟได้ — ต้องตรงกับ AssetRouter.kt (ทดสอบใน tools/tests/suites/convert.js)
 const MIME = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json',
@@ -60,6 +64,14 @@ function parseArgs(argv) {
 }
 
 function git(src, args) { return execFileSync('git', ['-C', src].concat(args), { encoding: 'utf8' }).trim(); }
+
+/** repo และโฟลเดอร์ของเว็บแอปใน commit ต้นทาง (ตามโครงสร้างของ commit นั้น) */
+function origin(src, commit) {
+  try {
+    execFileSync('git', ['-C', src, 'cat-file', '-e', `${commit}:${MONO_DIR}/${APP_DIR}/index.html`], { stdio: 'ignore' });
+    return { repo: MONO_REPO, path: `${MONO_DIR}/${APP_DIR}` };
+  } catch (e) { return { repo: LEGACY_REPO, path: APP_DIR }; }
+}
 
 /** JSON ที่ปลอดภัยสำหรับฝังในสคริปต์ */
 function jsonForScript(v) {
@@ -162,12 +174,13 @@ function build(src, asCommit) {
   // ---------- AppPlatform ของ Android ----------
   const tpl = readText(path.join(TEMPLATES, 'platform.js'));
   if (!tpl.includes('/*@SOURCE@*/null')) fail('templates/platform.js ไม่มีตำแหน่งใส่ค่า');
-  const source = { repo: SOURCE_REPO, commit, path: APP_DIR };
+  const { repo, path: appPath } = origin(src, commit);
+  const source = { repo, commit, path: appPath };
   www('android/platform.js', tpl.replace('/*@SOURCE@*/null', jsonForScript(source)));
 
   const sortedSources = {};
   Object.keys(sources).sort().forEach(k => { sortedSources[k] = sources[k]; });
-  files.set('source.json', Buffer.from(JSON.stringify({ repo: SOURCE_REPO, commit, path: APP_DIR,
+  files.set('source.json', Buffer.from(JSON.stringify({ repo, commit, path: appPath,
     generator: 'tools/convert/build.js', files: sortedSources }, null, 2) + '\n'));
 
   for (const p of files.keys()) {
@@ -175,7 +188,7 @@ function build(src, asCommit) {
     const ext = path.extname(p);
     if (!MIME[ext] && !/(^|\/)(SHA256SUMS|LICENSE[^/]*|COPYING[^/]*|NOTICE[^/]*)$/.test(p)) fail('ไม่รู้จักชนิดไฟล์ ' + p);
   }
-  return { files, commit };
+  return { files, commit, repo };
 }
 
 /** ไฟล์ที่ build.js เป็นเจ้าของ (ใช้ตรวจไฟล์เกิน/ขาด) */
@@ -199,10 +212,10 @@ function main() {
       execFileSync('git', ['-C', args.source, 'cat-file', '-e', args.asCommit + '^{commit}'], { stdio: 'ignore' });
     } catch (e) { fail('ไม่พบ commit ' + args.asCommit + ' ใน ' + args.source); }
   }
-  const { files, commit } = build(args.source, args.asCommit);
+  const { files, commit, repo } = build(args.source, args.asCommit);
   const projectDir = path.join(ROOT, PROJECT);
   const from = args.asCommit && args.asCommit !== head
-    ? `${SOURCE_REPO}@${head.slice(0, 12)} (ในชื่อ ${commit.slice(0, 12)})` : `${SOURCE_REPO}@${commit.slice(0, 12)}`;
+    ? `${origin(args.source, head).repo}@${head.slice(0, 12)} (ในชื่อ ${repo}@${commit.slice(0, 12)})` : `${repo}@${commit.slice(0, 12)}`;
 
   if (args.check) {
     const problems = [];
@@ -234,7 +247,7 @@ function main() {
   fs.rmSync(tmp, { recursive: true, force: true });
   let bytes = 0;
   for (const b of files.values()) bytes += b.length;
-  console.log(`แปลง ${SOURCE_REPO}@${commit.slice(0, 12)} → ${PROJECT}/${WWW}/ (${files.size} ไฟล์, ${(bytes / 1048576).toFixed(1)} MB)`);
+  console.log(`แปลง ${repo}@${commit.slice(0, 12)} → ${PROJECT}/${WWW}/ (${files.size} ไฟล์, ${(bytes / 1048576).toFixed(1)} MB)`);
 }
 
 if (require.main === module) main();

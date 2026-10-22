@@ -2,8 +2,17 @@
 
 เว็บแอปที่ https://doc-scanner-pdf.github.io/doc-scanner-pdf/ — รายการล่าสุดอยู่บนสุด
 เลขเวอร์ชันของเว็บคือเลข commit ที่แสดงท้ายหน้าแรก ("เวอร์ชัน xxxxxxx")
-แอป Android (`chatraweechai/doc-scanner-pdf-android`)
-มีบันทึกของตัวเองใน repo นั้น
+แอป Android (โฟลเดอร์ `doc-scanner-pdf-android/` ของ repo เดียวกัน)
+มีบันทึกของตัวเองในโฟลเดอร์นั้น
+
+## 2026-10-22
+
+- **รวม repo** — โค้ดเว็บแอป (`chatraweechai/doc-scanner-pdf-code`) และแอป Android (`chatraweechai/doc-scanner-pdf-android`)
+  ย้ายมารวมที่ repo เดียว [`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf) ในโฟลเดอร์
+  `doc-scanner-pdf-code/` และ `doc-scanner-pdf-android/` พร้อมประวัติ commit ทั้งหมด การตั้งค่า CI ทั้งหมดอยู่ที่ `.github/workflows/`
+  ของ repo รวม — การแก้เว็บแอปที่ทำให้แอป Android เปลี่ยนจะถูกตรวจใน push เดียวกันทันที (ไม่ต้องรอตรวจรายวันข้าม repo)
+- ตัวแอปไม่เปลี่ยน: แก้เฉพาะลิงก์ใน README, เครื่องมือเผยแพร่ (`tools/publish-site.sh` ใช้ได้ทั้ง commit ใหม่และ commit ก่อนรวม repo)
+  และการตั้งค่า CI — ไฟล์ของแอป Android เหมือนเดิมทุกไบต์ จึงไม่ออกรุ่นใหม่ของแอป Android (ยังเป็น v1.0.21)
 
 ## 2026-10-20
 

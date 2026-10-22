@@ -6,8 +6,8 @@
 
 **ใช้งานออนไลน์:** https://doc-scanner-pdf.github.io/doc-scanner-pdf/
 
-**แอป Android (มือถือและแท็บเล็ต):** [`chatraweechai/doc-scanner-pdf-android`](https://github.com/chatraweechai/doc-scanner-pdf-android)
-(โฟลเดอร์ `doc-scanner-pdf-android/`) — แปลงอัตโนมัติจากโค้ดชุดนี้ ทำงานในเครื่องโดยไม่ต้องใช้อินเทอร์เน็ต
+**แอป Android (มือถือและแท็บเล็ต):** โฟลเดอร์ `doc-scanner-pdf-android/` ของ repo
+[`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf) — แปลงอัตโนมัติจากโค้ดชุดนี้ ทำงานในเครื่องโดยไม่ต้องใช้อินเทอร์เน็ต
 ดาวน์โหลดไฟล์ APK (รุ่นล่าสุด เซ็นด้วยกุญแจถาวร) ได้ที่ https://doc-scanner-pdf.github.io/android/
 
 ## ความสามารถ
@@ -90,8 +90,8 @@
 ### นำขึ้นเว็บ (แนะนำ เพื่อใช้กล้องบนมือถือ)
 
 เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`doc-scanner-pdf/doc-scanner-pdf.github.io`](https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io)
-ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://doc-scanner-pdf.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ใน repo
-[`chatraweechai/doc-scanner-pdf-code`](https://github.com/chatraweechai/doc-scanner-pdf-code) (เดิมคือ `chatrawichai-tech/claude4code` และ `claude`)
+ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://doc-scanner-pdf.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ในโฟลเดอร์ `doc-scanner-pdf-code/` ของ repo
+[`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf) (ก่อน 2026-10-22 คือ `chatraweechai/doc-scanner-pdf-code`, เดิม `chatrawichai-tech/claude4code` และ `claude`)
 ทุกครั้งที่แก้ไข:
 1. รันชุดทดสอบในเบราว์เซอร์ทั้งหมด (`tools/tests`) — ต้องผ่านก่อนเผยแพร่ (CI รันซ้ำทุกครั้งที่ push)
 2. `tools/publish-site.sh` สร้างโฟลเดอร์เว็บจาก commit ที่ push แล้ว ประทับเลข commit (`tools/stamp-build.sh`)

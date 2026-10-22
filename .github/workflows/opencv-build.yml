@@ -1,9 +1,9 @@
-# Builds the OpenCV.js files that doc-scanner-pdf hosts itself (doc-scanner-pdf/vendor/opencv/),
+# Builds the OpenCV.js files that doc-scanner-pdf hosts itself (doc-scanner-pdf-code/doc-scanner-pdf/vendor/opencv/),
 # from the official OpenCV 4.10.0 source with the official build script (platforms/js/build_js.py):
 #   simd/opencv.js + opencv_js.wasm  WebAssembly SIMD, separate .wasm (streaming compile + browser code cache)
 #   basic/opencv.js                  no SIMD, single file (older browsers and opening index.html via file://)
 # Both contain only core + imgproc (tools/opencv-build/opencv_js.config.py), which makes them far smaller
-# than the full build. Each build must pass tools/opencv-build/smoke-test.js; the newest passing emsdk wins.
+# than the full build. Each build must pass doc-scanner-pdf-code/tools/opencv-build/smoke-test.js; the newest passing emsdk wins.
 # The result is committed back to the branch the workflow runs on.
 #
 # Why self-host: https://docs.opencv.org/4.10.0/opencv.js started returning HTTP 404, which broke the app.
@@ -14,7 +14,7 @@ on:
     branches-ignore: [main]
     paths:
       - '.github/workflows/opencv-build.yml'
-      - 'tools/opencv-build/**'
+      - 'doc-scanner-pdf-code/tools/opencv-build/**'
   workflow_dispatch:
 
 permissions:
@@ -68,7 +68,7 @@ jobs:
           fi
           emcmake python3 opencv/platforms/js/build_js.py build \
             --build_wasm $variant_flags \
-            --config "$GITHUB_WORKSPACE/repo/tools/opencv-build/opencv_js.config.py" \
+            --config "$GITHUB_WORKSPACE/repo/doc-scanner-pdf-code/tools/opencv-build/opencv_js.config.py" \
             --cmake_option=-DBUILD_opencv_calib3d=OFF \
             --cmake_option=-DBUILD_opencv_dnn=OFF \
             --cmake_option=-DBUILD_opencv_features2d=OFF \
@@ -82,7 +82,7 @@ jobs:
           ls -l build/bin
 
       - name: Smoke test
-        run: node repo/tools/opencv-build/smoke-test.js build/bin/opencv.js
+        run: node repo/doc-scanner-pdf-code/tools/opencv-build/smoke-test.js build/bin/opencv.js
 
       - name: Collect output
         run: |
@@ -95,7 +95,7 @@ jobs:
             echo "OpenCV ${OPENCV_VERSION} (commit ${opencv_commit}), variant: ${{ matrix.variant }}"
             echo "emsdk ${{ matrix.emsdk }}: $(emcc --version | head -1)"
             echo "build_js.py --build_wasm $([ "${{ matrix.variant }}" = simd ] && echo '--simd --disable_single_file'), modules core+imgproc"
-            echo "whitelist: tools/opencv-build/opencv_js.config.py"
+            echo "whitelist: doc-scanner-pdf-code/tools/opencv-build/opencv_js.config.py"
             echo "workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           } > out/BUILD-INFO.txt
           ls -l out
@@ -126,7 +126,7 @@ jobs:
       - name: Place files
         run: |
           set -euo pipefail
-          dest=doc-scanner-pdf/vendor/opencv
+          dest=doc-scanner-pdf-code/doc-scanner-pdf/vendor/opencv
           for variant in simd basic; do
             chosen=""
             for v in 3.1.74 3.1.64; do
@@ -148,7 +148,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A doc-scanner-pdf/vendor/opencv
+          git add -A doc-scanner-pdf-code/doc-scanner-pdf/vendor/opencv
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git commit -m "Vendor OpenCV.js ${OPENCV_VERSION} builds (SIMD + basic, core+imgproc)" \
                      -m "Built by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

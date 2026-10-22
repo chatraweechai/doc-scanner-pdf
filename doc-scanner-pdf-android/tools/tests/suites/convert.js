@@ -51,6 +51,21 @@ t.check('doc-scanner-pdf-android/ matches the converter output (no hand edits)',
     [same, renamed, unknown, write].map(r => r.ok + ':' + r.out.trim().split('\n')[0].slice(0, 80)).join(' | '));
 }
 
+// ที่มาที่บันทึกในแอปตามโครงสร้างของ commit: commit ของ repo รวม → chatraweechai/doc-scanner-pdf (doc-scanner-pdf-code/doc-scanner-pdf);
+// commit ก่อนรวม repo (เว็บแอปอยู่บนสุด) → chatraweechai/doc-scanner-pdf-code (doc-scanner-pdf) — การรวม repo จึงไม่เปลี่ยนไฟล์แอป
+{
+  const json = r => JSON.parse(r.files.get('source.json').toString('utf8'));
+  const mono = json(build(path.join(ROOT, '../doc-scanner-pdf-code')));
+  const tested = json(a);
+  const testedMono = path.basename(CLAUDE4CODE_SRC) === 'doc-scanner-pdf-code' &&
+    fs.existsSync(path.join(CLAUDE4CODE_SRC, '..', 'doc-scanner-pdf-android'));
+  t.check('source.json/platform.js record the repository of the converted commit (merged repository or, before the merge, doc-scanner-pdf-code)',
+    mono.repo === 'chatraweechai/doc-scanner-pdf' && mono.path === 'doc-scanner-pdf-code/doc-scanner-pdf' &&
+    tested.repo === (testedMono ? mono.repo : 'chatraweechai/doc-scanner-pdf-code') && tested.path === (testedMono ? mono.path : 'doc-scanner-pdf') &&
+    SOURCE.repo === tested.repo && SOURCE.path === tested.path,
+    `${mono.repo}:${mono.path} / tested ${tested.repo}:${tested.path} / source.json ${SOURCE.repo}:${SOURCE.path}`);
+}
+
 // ---- app code unchanged ----
 const appFiles = walk(WEB_APP).filter(p => /^(js|css)\//.test(p) && p !== 'js/boot.js');
 const changed = appFiles.filter(p => !fs.existsSync(path.join(WWW_DIR, p)) || !read(path.join(WWW_DIR, p)).equals(read(path.join(WEB_APP, p))));
@@ -129,7 +144,8 @@ t.check('Gradle wrapper jar and distribution checksum are the official ones for 
   known ? '' : 'add the checksums of Gradle ' + version + ' from gradle.org/release-checksums to this test');
 const gitignore = fs.existsSync(path.join(ROOT, '.gitignore')) ? text(path.join(ROOT, '.gitignore')) : '';
 // กุญแจเซ็นแอปถาวรให้เฉพาะ build ของ main ที่ออก Release — branch อื่น, PR และรอบตรวจรายวันไม่ได้รับ
-const workflow = fs.readFileSync(path.join(ROOT, '.github/workflows/android.yml'), 'utf8');
+const WORKFLOWS = path.join(ROOT, '../.github/workflows'); // workflow ของ repo รวม chatraweechai/doc-scanner-pdf
+const workflow = fs.readFileSync(path.join(WORKFLOWS, 'android.yml'), 'utf8');
 const secretLines = workflow.split('\n').filter(l => /secrets\.ANDROID_/.test(l)).map(l => l.trim());
 const gatedSecret = /^[A-Z0-9_]+: \$\{\{ env\.RELEASE_BUILD == 'true' && secrets\.ANDROID_[A-Z0-9_]+ \|\| '' \}\}$/;
 const presenceOnly = /^HAS_KEY: \$\{\{ secrets\.ANDROID_KEYSTORE_BASE64 != '' \}\}$/;
@@ -137,18 +153,20 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   workflow.includes("RELEASE_BUILD: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}") &&
   secretLines.filter(l => gatedSecret.test(l)).length === 4 && secretLines.every(l => gatedSecret.test(l) || presenceOnly.test(l)),
   secretLines.filter(l => !gatedSecret.test(l) && !presenceOnly.test(l)).join(' | '));
-// chatraweechai/doc-scanner-pdf-code (เดิม chatrawichai-tech/claude4code) เป็น public: ทุกขั้นตอนที่ดึงโค้ดจาก repo นั้นส่ง deploy key
-// แบบอ่านอย่างเดียว (secret CLAUDE_REPO_KEY — ใช้เมื่อ repo ถูกเปลี่ยนเป็น private เท่านั้น) และไม่เก็บข้อมูลล็อกอิน; workflow ไม่อ้างถึง repo
-// เดิมของ chatrawichai-tech ที่ใช้ไม่ได้แล้ว
+// เว็บแอปต้นทางอยู่ใน repo เดียวกัน (doc-scanner-pdf-code/ หรือประวัติก่อนรวม repo เมื่อ 2026-10-22): workflow ใช้ commit ใน source.json
+// ผ่าน tools/ci/source-checkout.sh (ประวัติทั้งหมด) — ไม่ checkout repo โค้ดอื่น (repo เดียวที่ checkout เพิ่มได้คือเว็บไซต์)
+// ไม่มี deploy key ของ repo โค้ดเดิม และไม่อ้างถึงชื่อ repo เดิมของ chatrawichai-tech ที่ใช้ไม่ได้แล้ว
 {
   for (const name of ['android.yml', 'play.yml']) {
-    const wf = fs.readFileSync(path.join(ROOT, '.github/workflows', name), 'utf8');
-    const steps = wf.split(/\n(?=\s+- name: )/).filter(s => /^\s+repository: chatraweechai\/doc-scanner-pdf-code\s*$/m.test(s));
-    const withKey = steps.filter(s => /^\s+ssh-key: \$\{\{ secrets\.CLAUDE_REPO_KEY \}\}/m.test(s) && /^\s+persist-credentials: false\s*$/m.test(s));
+    const wf = fs.readFileSync(path.join(WORKFLOWS, name), 'utf8');
+    const repos = [...wf.matchAll(/^\s+repository: (\S+)\s*$/gm)].map(m => m[1]);
+    const uses = wf.split('tools/ci/source-checkout.sh "$RUNNER_TEMP/code-src"').length - 1;
     const body = wf.slice(wf.indexOf('\nname:'));
-    t.check(`${name}: every checkout of chatraweechai/doc-scanner-pdf-code passes the optional read-only deploy key (CLAUDE_REPO_KEY), not persisted; no removed repository names`,
-      steps.length >= (name === 'android.yml' ? 2 : 1) && withKey.length === steps.length && !/chatrawichai-tech|claude4code|claude4app|claude4gas/.test(body),
-      `${withKey.length}/${steps.length} checkouts`);
+    t.check(`${name}: the web app comes from this repository at the commit in source.json (tools/ci/source-checkout.sh); no other code repository or its key; no removed repository names`,
+      uses === (name === 'android.yml' ? 2 : 1) && /^\s+working-directory: doc-scanner-pdf-android\s*$/m.test(wf) &&
+      repos.every(r => r === 'doc-scanner-pdf/doc-scanner-pdf.github.io') && !wf.includes('CLAUDE_REPO_KEY') &&
+      !/chatrawichai-tech|claude4code|claude4app|claude4gas/.test(body),
+      `${uses} source checkouts, repositories ${repos.join(' ') || '-'}`);
   }
 }
 // Release สาธารณะเซ็นด้วยกุญแจถาวรเสมอ: ไม่มี secret กุญแจ → ไม่ออก Release (ล้มพร้อมบอกวิธี) และตรวจว่า APK ไม่ได้เซ็นด้วยกุญแจ debug ก่อนสร้าง
@@ -248,7 +266,21 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   const older = decide();                                            // not newer than v1.0.17 → error
   put('CHANGELOG.md', '# log\n\n## v1.0.18 — 2026-09-28\n\n## v1.0.17\n- x\n'); commit('empty entry');
   const empty = decide();                                            // version without notes → error
+  // merged into a bigger repository (2026-10-22): everything moves into doc-scanner-pdf-android/; tags from before still count
+  put('CHANGELOG.md', changelog('1.0.17', '1.0.16')); commit('back to 1.0.17');
+  fs.mkdirSync(path.join(repo, 'doc-scanner-pdf-android.tmp'));
+  for (const f of g('ls-tree', '--name-only', 'HEAD').trim().split('\n')) g('mv', f, 'doc-scanner-pdf-android.tmp/');
+  g('mv', 'doc-scanner-pdf-android.tmp', 'doc-scanner-pdf-android');
+  put('doc-scanner-pdf-code/doc-scanner-pdf/index.html', 'web'); commit('move into the merged repository');
+  const sub = path.join(repo, 'doc-scanner-pdf-android');
+  const decideIn = () => { try { return version.decide(sub); } catch (e) { return { action: 'error', reason: e.message }; } };
+  const moved = decideIn();                                          // same app, only moved → skip
+  put('doc-scanner-pdf-android/doc-scanner-pdf-android/app/src/main/assets/www/index.html', 'v3'); commit('app change after the move');
+  const movedChange = decideIn();                                    // app changed since v1.0.17 → error
   fs.rmSync(repo, { recursive: true, force: true });
+  t.check('release decision after the move into chatraweechai/doc-scanner-pdf: moving the folder is no app change; a real change still needs a new version',
+    moved.action === 'skip' && moved.tag === 'v1.0.17' && movedChange.action === 'error' && /เพิ่มรุ่นใหม่/.test(movedChange.reason),
+    [moved, movedChange].map(r => r.action + ':' + r.reason).join(' | '));
   t.check('release decision: first/new version of a changed app → release; docs/CI-only → skip; app change without version, fake or older version, empty notes → error',
     first.action === 'release' && docsOnly.action === 'skip' && noVersion.action === 'error' && /เพิ่มรุ่นใหม่/.test(noVersion.reason) &&
     newVersion.action === 'release' && newVersion.tag === 'v1.0.17' && newVersion.latest === 'v1.0.16' && /change in 1\.0\.17/.test(newVersion.notes) &&

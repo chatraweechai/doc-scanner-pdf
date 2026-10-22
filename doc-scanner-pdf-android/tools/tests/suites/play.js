@@ -192,7 +192,7 @@ run(async () => {
   }
 
   // ---------------------------------------------------------------- the workflow
-  const wf = fs.readFileSync(path.join(ROOT, '.github/workflows/play.yml'), 'utf8');
+  const wf = fs.readFileSync(path.join(ROOT, '../.github/workflows/play.yml'), 'utf8'); // workflow ของ repo รวม
   const keyLines = [...wf.matchAll(/^.*secrets\.PLAY_SERVICE_ACCOUNT_JSON.*$/gm)].map(m => m[0].trim());
   check('play.yml: manual only (workflow_dispatch), main only; the service account key only in the upload step; the AAB of the GitHub Release, not debug-signed',
     /^on:\s*\n\s+workflow_dispatch:/m.test(wf) && !/^\s+(push|pull_request|schedule):/m.test(wf) && wf.includes("github.ref == 'refs/heads/main'") &&
@@ -203,10 +203,10 @@ run(async () => {
   const secretNames = [...new Set([...wf.matchAll(/secrets\.([A-Z_]+)/g)].map(m => m[1]))].sort();
   const uploadJob = wf.slice(wf.indexOf('\n  upload:'));
   const checkouts = [...wf.matchAll(/uses: actions\/checkout@[^\n]*\n\s+with:\n((?:\s{10}[^\n]*\n)+)/g)].map(m => m[1]);
-  check('play.yml: no signing or site secrets (only CLAUDE_REPO_KEY for the store images, outside the upload job), no stored git credentials',
-    JSON.stringify(secretNames) === '["CLAUDE_REPO_KEY","PLAY_SERVICE_ACCOUNT_JSON"]' && !uploadJob.includes('CLAUDE_REPO_KEY') &&
-    checkouts.length >= 3 && checkouts.every(w => /persist-credentials: false/.test(w)), secretNames.join(' ') + ' / checkouts ' + checkouts.length);
+  check('play.yml: no signing or site secrets (only the Google Play key), no stored git credentials',
+    JSON.stringify(secretNames) === '["PLAY_SERVICE_ACCOUNT_JSON"]' && !uploadJob.includes('CLAUDE_REPO_KEY') &&
+    checkouts.length >= 2 && checkouts.every(w => /persist-credentials: false/.test(w)), secretNames.join(' ') + ' / checkouts ' + checkouts.length);
   check('play.yml: the store-listing artifact holds only the two languages (not the raw captures and video frames)',
-    /path: \|\n\s+tools\/store\/out\/th\n\s+tools\/store\/out\/en-US\n/.test(wf) && !/path: tools\/store\/out\s*\n/.test(wf));
+    /path: \|\n\s+doc-scanner-pdf-android\/tools\/store\/out\/th\n\s+doc-scanner-pdf-android\/tools\/store\/out\/en-US\n/.test(wf) && !/path: (doc-scanner-pdf-android\/)?tools\/store\/out\s*\n/.test(wf));
   t.finish();
 });

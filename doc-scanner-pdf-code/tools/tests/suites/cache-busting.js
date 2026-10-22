@@ -272,7 +272,7 @@ run(async () => {
     const got = files(pubA);
     const expected = tracked.concat('version.json').sort();
     const stamped = ['index.html', 'js/boot.js', 'version.json'];
-    const changed = got.filter(f => !stamped.includes(f) && !fs.readFileSync(path.join(pubA, f)).equals(git('show', `${head}:doc-scanner-pdf/${f}`)));
+    const changed = got.filter(f => !stamped.includes(f) && !fs.readFileSync(path.join(pubA, f)).equals(git('show', `${head}:./doc-scanner-pdf/${f}`)));
     const vj = JSON.parse(fs.readFileSync(path.join(pubA, 'version.json'), 'utf8'));
     t.check('publish-site: the committed app, stamped with the commit and its time',
       JSON.stringify(got) === JSON.stringify(expected) && !changed.length && vj.commit === build && vj.builtAt === builtAt &&
