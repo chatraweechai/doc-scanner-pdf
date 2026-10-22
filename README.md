@@ -1,1 +1,0 @@
-# doc-scanner-pdf-code
