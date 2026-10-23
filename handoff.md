@@ -39,11 +39,16 @@ CI `.github/workflows/`, **เว็บไซต์ = GitHub Pages ของ rep
   Actions (มี contents: write) สร้าง tag ที่ commit เก่าไม่ได้ เพราะ commit เหล่านั้นมี `.github/workflows/` ต่างจาก main (ต้องมีสิทธิ์ workflows)
   และ session push tag ไม่ได้ → แก้ workflow: ใช้ tag ที่เจ้าของ push ไว้ (`--verify-tag`), ถ้ายังไม่มีจะบอกคำสั่ง (ข้อ 1.2) — ทดลองรันในเครื่อง
   ด้วย gh จำลองแล้วทั้งกรณีไม่มี tag และมี tag (v1.0.20 ไม่มีไฟล์ ไม่ใช่ latest; v1.0.21 APK+AAB ตรวจ SHA-256/ใบรับรอง เป็น latest)
+- `d435dd7`, `459fa19`: ✓ Android **ทุกงาน** (sync, page tests, build, emulator 3 เครื่อง, release = skip ไม่ออกซ้ำ) · ✓ **Pages deploy สำเร็จ** —
+  https://chatraweechai.github.io/doc-scanner-pdf/ ให้บริการเว็บแอป `d435dd77a06f` (ประทับเลข build แล้ว) + `android/` (v1.0.21)
+  ตรวจเว็บจริงทีละไฟล์ 92/92 ตรงทุกไบต์ · ✗ Import former releases: รอ tag (ข้อ 1.2 — ตามที่ออกแบบ)
+- **Pages แบบเดิม (Deploy from a branch) ยังเปิดอยู่**: ทุก push จะ build README ของ main ทับเว็บ (เห็นหน้า README ~10 นาที) จนกว่า `pages.yml`
+  deploy ใหม่หลัง Android ผ่าน — หายเมื่อเจ้าของเปลี่ยน Source เป็น GitHub Actions (ข้อ 1.1)
 
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
 
-1. **เปิดให้ `pages.yml` deploy ได้**: repo นี้ → Settings → Pages → Build and deployment → Source: **GitHub Actions**
-   (ตอนนี้เป็น Deploy from a branch ซึ่งแสดง README) แล้ว Actions → Pages → Run workflow (หรือรอ push ถัดไป)
+1. **ปิด Pages แบบเดิม**: repo นี้ → Settings → Pages → Build and deployment → Source: **GitHub Actions** (ตอนนี้เป็น Deploy from a branch
+   ซึ่ง build README ทับเว็บทุก push) แล้ว Actions → Pages → Run workflow — `pages.yml` deploy ได้แล้ว (ทดสอบแล้ว)
 2. **push tag ของ Release เดิม 2 ตัว** (session/Actions ทำไม่ได้ — ใช้ clone ใดก็ได้ของ repo นี้ด้วยบัญชีของเจ้าของ เช่น Codespaces):
    `git push https://github.com/chatraweechai/doc-scanner-pdf 3e50abd001bc4f882ba630154703cdb4ec6e2f8f:refs/tags/v1.0.20 792cba0a070c51569340109fdb4bbd5e6caf81dc:refs/tags/v1.0.21`
    แล้ว Actions → Import former releases → Run workflow (หรือรอรอบรายวัน) — tag ที่ commit เก่าจะทำให้ workflow `android.yml` รุ่นเก่าของ commit นั้น
