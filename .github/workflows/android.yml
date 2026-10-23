@@ -16,9 +16,8 @@
 #   release   — on main, when everything passed and CHANGELOG.md has a new version for a changed app: GitHub Release
 #               with the installable APK and that version's changelog (otherwise no release — never a fake new version).
 #               Never a release signed with a temporary key: without the permanent signing key it fails and says so
-#   site      — the released APK of the current version (from the GitHub Release, only if signed with the permanent
-#               key) and its download page are pushed to https://doc-scanner-pdf.github.io/android/
-#               (tools/site/build-page.js) — nothing to do when the page already has that exact APK
+#   (the download page on the web site, https://chatraweechai.github.io/doc-scanner-pdf/android/, is built by pages.yml
+#   from the newest release after this workflow passes on main)
 #
 # Actions are pinned to full commit SHAs for supply-chain safety.
 name: Android
@@ -310,7 +309,6 @@ jobs:
       cancel-in-progress: false
     outputs:
       released: ${{ steps.release.outputs.released }}
-      publish: ${{ steps.release.outputs.publish }}
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Checkout
@@ -331,8 +329,6 @@ jobs:
           echo "version=$ver" >> "$GITHUB_OUTPUT"
           if [ "$action" != "release" ]; then
             echo "released=false" >> "$GITHUB_OUTPUT"
-            # the current version is already released: the site job makes sure the download page has it
-            echo "publish=true" >> "$GITHUB_OUTPUT"
             echo "### No new release" >> "$GITHUB_STEP_SUMMARY"
             jq -r .reason <<<"$d" >> "$GITHUB_STEP_SUMMARY"
             echo "::notice title=No new release::$(jq -r .reason <<<"$d")"
@@ -361,7 +357,7 @@ jobs:
             echo
             echo "**ติดตั้ง:** ดาวน์โหลด \`doc-scanner-pdf-$ver.apk\` บนมือถือ/แท็บเล็ต Android 8.0 ขึ้นไป แล้วเปิดไฟล์ (อนุญาต \"ติดตั้งแอปที่ไม่รู้จัก\" ให้เบราว์เซอร์ครั้งแรก)"
             echo
-            echo "หน้าดาวน์โหลด: https://doc-scanner-pdf.github.io/android/"
+            echo "หน้าดาวน์โหลด: https://chatraweechai.github.io/doc-scanner-pdf/android/"
             echo
             echo "\`doc-scanner-pdf-$ver.aab\` คือไฟล์สำหรับอัปโหลดขึ้น Google Play (Android App Bundle) — ติดตั้งบนมือถือโดยตรงไม่ได้"
             echo
@@ -371,112 +367,5 @@ jobs:
           } > notes.md
           gh release create "$tag" "dist/doc-scanner-pdf-$ver.apk" "dist/doc-scanner-pdf-$ver.aab" --title "สแกนเอกสาร PDF $ver" --notes-file notes.md --target "$GITHUB_SHA" -R "$GITHUB_REPOSITORY"
           echo "released=true" >> "$GITHUB_OUTPUT"
-          echo "publish=true" >> "$GITHUB_OUTPUT"
           echo "### Release $tag" >> "$GITHUB_STEP_SUMMARY"
           echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"
-
-  site:
-    name: Publish the APK on the web site (doc-scanner-pdf/doc-scanner-pdf.github.io)
-    needs: [release]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.release.outputs.publish == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      actions: read
-    env:
-      APP_VERSION: ${{ needs.release.outputs.version }}
-    concurrency:
-      group: android-site
-      cancel-in-progress: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0  # release tags: the commit that built the released APK
-          persist-credentials: false
-
-      - name: Key for the site repository
-        env:
-          HAS_KEY: ${{ secrets.SITE_DEPLOY_KEY != '' }}
-        run: |
-          [ "$HAS_KEY" = "true" ] || { echo "::error title=SITE_DEPLOY_KEY::add a deploy key with write access to doc-scanner-pdf/doc-scanner-pdf.github.io and its private key as the secret SITE_DEPLOY_KEY here (see README)"; exit 1; }
-
-      - name: The released APK, signed with the permanent key
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          [[ "$APP_VERSION" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad version '$APP_VERSION'"; exit 1; }
-          # the file of the GitHub Release itself (the page must offer exactly what was released); releases made before the
-          # merge are in the former repository (tools/release/former-releases.json)
-          apk="dist/doc-scanner-pdf-${APP_VERSION}.apk"
-          r="$(node tools/release/version.js --release "v${APP_VERSION}")"
-          rel_repo="$(jq -r .repo <<<"$r")"; rel_repo="${rel_repo:-$GITHUB_REPOSITORY}"
-          echo "REL_COMMIT=$(jq -r .commit <<<"$r")" >> "$GITHUB_ENV"
-          gh release download "v${APP_VERSION}" -p "doc-scanner-pdf-${APP_VERSION}.apk" -D dist -R "$rel_repo"
-          [ -f "$apk" ] || { echo "::error::$apk is not in release v${APP_VERSION}"; ls -la dist; exit 1; }
-          bt="$(for d in $(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V); do [ -x "${d}apksigner" ] && echo "$d"; done | tail -1)"
-          [ -n "$bt" ] || { echo "::error::no apksigner in $ANDROID_HOME/build-tools"; exit 1; }
-          echo "apksigner: ${bt}apksigner"
-          certs="$("${bt}apksigner" verify --print-certs "$apk" 2>&1)" || { echo "$certs"; echo "::error::apksigner could not verify $apk"; exit 1; }
-          grep -E 'Number of signers|certificate (DN|SHA-256 digest)' <<<"$certs" || true
-          digests="$(grep -oE 'certificate SHA-256 digest: [0-9a-f]{64}' <<<"$certs" | awk '{print $NF}' | sort -u)"
-          if [ -z "$digests" ] || [ "$(wc -l <<<"$digests")" != 1 ]; then
-            echo "$certs"; echo "::error::expected exactly one signing certificate"; exit 1
-          fi
-          if grep -q 'CN=Android Debug' <<<"$certs"; then
-            echo "::error::the APK is signed with the debug key; the public site only gets APKs signed with the permanent key"; exit 1
-          fi
-          echo "APK=$apk" >> "$GITHUB_ENV"
-          echo "CERT=$digests" >> "$GITHUB_ENV"
-
-      - name: Checkout the site repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
-          path: doc-scanner-pdf-android/site
-          ssh-key: ${{ secrets.SITE_DEPLOY_KEY }}  # deploy key that can write to the site repository only
-          persist-credentials: true  # the next step pushes; removed when the job ends
-
-      - name: Build the download page and push it
-        run: |
-          set -euo pipefail
-          # the commit of the release (it built the APK), and the web app commit it was converted from (source.json in
-          # this folder, or at the top level for a release made before the merge)
-          rel="$REL_COMMIT"
-          src="$( { git show "${rel}:./doc-scanner-pdf-android/source.json" 2>/dev/null || git show "${rel}:doc-scanner-pdf-android/source.json"; } | jq -r .commit)"
-          [[ "$rel" =~ ^[0-9a-f]{40}$ && "$src" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::cannot read the commits of v${APP_VERSION}"; exit 1; }
-          code="$(node tools/release/version.js | jq -r .code)"
-          if [ -f site/android/version.json ]; then
-            # the page already offers exactly this APK → nothing to publish
-            if [ "$(jq -r .version site/android/version.json)" = "$APP_VERSION" ] &&
-               [ "$(jq -r .sha256 site/android/version.json)" = "$(sha256sum "$APK" | cut -d' ' -f1)" ] &&
-               [ "$(jq -r .appCommit site/android/version.json)" = "$rel" ]; then
-              echo "the site already has doc-scanner-pdf-$APP_VERSION.apk"; exit 0
-            fi
-            # never replace a newer version (an older run finishing late, or a re-run of an old run)
-            cur="$(jq -r '.versionCode' site/android/version.json)"
-            if [[ "$cur" =~ ^[0-9]+$ ]] && [ "$cur" -gt "$code" ]; then
-              echo "::notice::the site already has a newer version ($(jq -r .version site/android/version.json)) — not replaced by $APP_VERSION"; exit 0
-            fi
-          fi
-          node tools/release/version.js --notes notes.md > /dev/null
-          node tools/site/build-page.js --apk "$APK" --out site/android --version "$APP_VERSION" \
-            --cert "$CERT" --source "$src" --app "$rel" --notes notes.md
-          cd site
-          git config user.name "doc-scanner-pdf-android release"
-          git config user.email "doc-scanner-pdf-android-release@users.noreply.github.com"
-          git add -A android
-          if git diff --cached --quiet; then echo "the site already has this APK"; exit 0; fi
-          git commit -q -m "Publish doc-scanner-pdf-android ${APP_VERSION} from doc-scanner-pdf@${rel:0:12}" \
-            -m "Signed release APK and its download page, built by the Android release job of chatraweechai/doc-scanner-pdf after every test passed (web app ${src:0:12})."
-          for i in 1 2 3; do
-            git push origin HEAD:main && break
-            sleep 5
-            git pull -q --rebase origin main
-          done
-          git fetch -q origin main
-          [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "::error::could not push to the site repository"; exit 1; }
-          echo "### https://doc-scanner-pdf.github.io/android/" >> "$GITHUB_STEP_SUMMARY"
-          echo "doc-scanner-pdf-${APP_VERSION}.apk published (site commit $(git rev-parse --short HEAD))" >> "$GITHUB_STEP_SUMMARY"

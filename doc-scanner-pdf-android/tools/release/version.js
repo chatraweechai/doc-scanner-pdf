@@ -9,8 +9,11 @@
  *        skip     รุ่นนี้ออกไปแล้ว และแอปไม่เปลี่ยนตั้งแต่นั้น (แก้แค่ CI/ชุดทดสอบ/เอกสาร — ไม่มีรุ่นใหม่ปลอม)
  *        ผิดพลาด  แอปเปลี่ยนแต่ไม่มีรุ่นใหม่ใน CHANGELOG.md / มีรุ่นใหม่แต่แอปไม่เปลี่ยน / เลขรุ่นไม่ใหม่กว่า
  *   node tools/release/version.js --notes <file>     บันทึกของรุ่นบนสุด (markdown) สำหรับ Release และหน้าดาวน์โหลด
- *   node tools/release/version.js --release <vX.Y.Z> {"tag","commit","repo"} ของ Release ที่ออกแล้ว: commit ที่ build และ repo ที่เก็บ
- *        Release (repo = "" คือ repo นี้; รุ่นก่อนรวม repo อยู่ใน repo เดิม — former-releases.json)
+ *   node tools/release/version.js --release <vX.Y.Z> {"tag","commit","repo","published"} ของ Release ที่ออกแล้ว: commit ที่ build และ
+ *        repo เดิมของรุ่นก่อนรวม repo ("" = ออกใน repo นี้) — Release ทุกรุ่นอยู่ใน repo นี้ (รุ่นเก่าคัดลอกโดย releases-import.yml)
+ *        รุ่นที่ยังไม่ได้คัดลอกหาได้จาก repo เดิม
+ *   node tools/release/version.js --latest-release   เหมือน --release ของรุ่นใหม่สุดที่ออกแล้ว (หน้าดาวน์โหลดบนเว็บไซต์)
+ *   node tools/release/version.js --notes-of <X.Y.Z> <file>  บันทึกของรุ่นนั้นใน CHANGELOG.md (markdown) สำหรับหน้าดาวน์โหลด
  *   --repo <dir>  repo ที่ตรวจ (ค่าเริ่มต้น: repo นี้)
  *
  * เจ้าของ repo สั่ง (2026-09-28): ห้ามสร้าง release ซ้ำของเดิม หรือเวอร์ชันใหม่ปลอม (เวอร์ชันเก่า แค่เปลี่ยนเลขใหม่) เด็ดขาด
@@ -30,8 +33,8 @@ const APP_PATHS = [
   'doc-scanner-pdf-android/gradle.properties',
   'doc-scanner-pdf-android/gradle'
 ];
-// Release ที่ออกก่อนรวม repo (2026-10-22) อยู่ใน repo เดิม และ tag ของรุ่นเหล่านั้น push มาที่นี่จาก session ไม่ได้
-// จึงบันทึก commit ของแต่ละรุ่นไว้ — ใช้เหมือน tag (ไม่ออกรุ่นเดิมซ้ำ)
+// Release ที่ออกก่อนรวม repo (2026-10-22) ใน repo เดิม: tag ของรุ่นเหล่านั้น push มาที่นี่จาก session ไม่ได้ จึงบันทึก commit
+// ของแต่ละรุ่นไว้ — ใช้เหมือน tag (ไม่ออกรุ่นเดิมซ้ำ) และ releases-import.yml ใช้คัดลอก Release มาที่ repo นี้
 const FORMER = JSON.parse(fs.readFileSync(path.join(__dirname, 'former-releases.json'), 'utf8'));
 const HEADING = /^## v(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?=\s)(.*)$/m;
 
@@ -57,7 +60,7 @@ const nums = v => v.split('.').map(Number);
 function releaseRefs(git) {
   const refs = {};
   for (const t of git(['tag', '-l', 'v*']).split('\n')) if (/^v\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(t)) refs[t] = t;
-  for (const [t, c] of Object.entries(FORMER.releases)) {
+  for (const [t, { commit: c }] of Object.entries(FORMER.releases)) {
     try { git(['cat-file', '-e', c + '^{commit}']); refs[t] = c; } catch (e) { /* ไม่ใช่ประวัติของ repo นี้ */ }
   }
   return refs;
@@ -70,7 +73,28 @@ function release(repo, tag) {
   const ref = releaseRefs(git)[tag];
   if (!ref) fail(`ไม่พบ Release ${tag}`);
   const commit = git(['rev-parse', '--verify', '--quiet', ref + '^{commit}']);
-  return { tag, commit, repo: FORMER.releases[tag] ? FORMER.repo : '' };
+  const former = FORMER.releases[tag];
+  return { tag, commit, repo: former ? FORMER.repo : '', published: (former && former.published) || '' };
+}
+
+/** Release ใหม่สุดที่ออกแล้ว (tag ใน git หรือรุ่นก่อนรวม repo) */
+function latestRelease(repo) {
+  const git = args => execFileSync('git', ['-C', repo].concat(args), { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const tags = Object.keys(releaseRefs(git));
+  if (!tags.length) fail('ยังไม่มี Release');
+  return release(repo, tags.sort((a, b) => cmp(nums(a.slice(1)), nums(b.slice(1)))).pop());
+}
+
+/** บันทึกของรุ่น X.Y.Z ใน CHANGELOG.md (ตั้งแต่หัวข้อ "## vX.Y.Z" ถึงหัวข้อถัดไป) */
+function notesOf(text, version) {
+  if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(version || '')) fail('--notes-of ต้องเป็นเลขรุ่น X.Y.Z');
+  const m = new RegExp('^## v' + version.replace(/\./g, '\\.') + '(?=\\s).*$', 'm').exec(text);
+  if (!m) fail(`CHANGELOG.md ไม่มีรุ่น v${version}`);
+  const rest = text.slice(m.index + m[0].length);
+  const next = /^## /m.exec(rest);
+  const notes = (next ? rest.slice(0, next.index) : rest).trim();
+  if (!notes) fail(`CHANGELOG.md: รุ่น v${version} ยังไม่มีรายการการเปลี่ยนแปลง`);
+  return notes;
 }
 
 function decide(repo) {
@@ -109,10 +133,19 @@ function main(argv) {
     else if (argv[i] === '--decide') mode = 'decide';
     else if (argv[i] === '--notes') { mode = 'notes'; notesFile = argv[++i] || ''; }
     else if (argv[i] === '--release') { mode = 'release'; tag = argv[++i] || ''; }
+    else if (argv[i] === '--latest-release') mode = 'latest';
+    else if (argv[i] === '--notes-of') { mode = 'notes-of'; tag = argv[++i] || ''; notesFile = argv[++i] || ''; }
     else fail('ไม่รู้จักตัวเลือก ' + argv[i]);
   }
   if (mode === 'decide') return decide(repo);
   if (mode === 'release') return release(repo, tag);
+  if (mode === 'latest') return latestRelease(repo);
+  if (mode === 'notes-of') {
+    const notes = notesOf(fs.readFileSync(path.join(repo, 'CHANGELOG.md'), 'utf8'), tag);
+    if (!notesFile) fail('--notes-of ต้องระบุไฟล์');
+    fs.writeFileSync(notesFile, notes + '\n');
+    return { version: tag, notes };
+  }
   const info = parse(fs.readFileSync(path.join(repo, 'CHANGELOG.md'), 'utf8'));
   if (mode === 'notes') {
     if (!notesFile) fail('--notes ต้องระบุไฟล์');
@@ -121,7 +154,7 @@ function main(argv) {
   return info;
 }
 
-module.exports = { parse, decide, release, APP_PATHS, FORMER };
+module.exports = { parse, decide, release, latestRelease, notesOf, APP_PATHS, FORMER };
 
 if (require.main === module) {
   try {

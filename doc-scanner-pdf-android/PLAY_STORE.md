@@ -14,7 +14,7 @@
 | ชื่อแอป (≤30), คำอธิบายสั้น (≤80), คำอธิบายเต็ม (≤4000), มีอะไรใหม่ (≤500) — ไทยและอังกฤษ | `tools/store/listing/th/`, `tools/store/listing/en-US/` |
 | ไอคอน 512×512, ภาพกราฟิกเด่น 1024×500, ภาพหน้าจอมือถือ 8 ภาพ, แท็บเล็ต 7" และ 10" อย่างละ 4 ภาพ — ไทยและอังกฤษ | `node tools/store/build.js` หรือ workflow **Google Play** (artifact `store-listing`) |
 | วิดีโอโปรโมต (MP4 1920×1080 ~40 วินาที) ไทยและอังกฤษ + ภาพปก | `node tools/store/video.js` หรือ workflow **Google Play** ติ๊ก *video* — Google Play รับเป็นลิงก์ YouTube |
-| นโยบายความเป็นส่วนตัว (ไทย + อังกฤษ) | https://doc-scanner-pdf.github.io/android/privacy.html |
+| นโยบายความเป็นส่วนตัว (ไทย + อังกฤษ) | https://chatraweechai.github.io/doc-scanner-pdf/android/privacy.html (ตั้งแต่ 2026-10-23 — เดิม https://doc-scanner-pdf.github.io/android/privacy.html) |
 | อัปโหลดแอป + หน้าร้านอัตโนมัติ (Google Play Android Publisher API) | `.github/workflows/play.yml`, `tools/play/publish.js` |
 
 ภาพทุกภาพถ่ายจากแอปจริง (หน้าเว็บของแอปแบบเดียวกับที่ WebView ของ Android แสดง ฟอนต์ Noto Sans Thai) จึงตรงกับแอปเสมอ —
@@ -59,7 +59,7 @@
 
 | หัวข้อ | คำตอบ |
 |---|---|
-| **Privacy policy** | `https://doc-scanner-pdf.github.io/android/privacy.html` |
+| **Privacy policy** | `https://chatraweechai.github.io/doc-scanner-pdf/android/privacy.html` (เปลี่ยนจากที่อยู่เดิม `https://doc-scanner-pdf.github.io/android/privacy.html` ใน Play Console ด้วย) |
 | **App access** | *All functionality is available without any access restrictions* |
 | **Ads** | *No, my app does not contain ads* |
 | **Content rating** | อีเมลติดต่อ → Category: **All Other App Types** (หรือ Utility, Productivity, Communication or Other) → ทุกข้อ **No** (ไม่มีความรุนแรง เนื้อหาทางเพศ ภาษาหยาบ ยาเสพติด การพนัน ผู้ใช้ไม่ได้สื่อสารกันหรือแชร์ตำแหน่ง) → ได้เรต 3+ / Everyone |
@@ -74,7 +74,7 @@
 ## 5. หน้าร้าน (Grow users → Store presence)
 
 - **Store settings**: App category = **Productivity** · Tags: Scanner, PDF, Document · Contact details: อีเมลติดต่อ (บังคับ, แสดงบนหน้าร้าน)
-  · Website ใส่ `https://doc-scanner-pdf.github.io/android/` ได้
+  · Website ใส่ `https://chatraweechai.github.io/doc-scanner-pdf/android/` ได้
 - **Main store listing** (เมนู Grow users → Store presence → Store listings หรือพิมพ์ `store listing` ในช่องค้นหาของ Play Console): ตั้ง service account (ขั้นที่ 6–7) แล้วรัน workflow แบบ *listing only* — ข้อความ ไอคอน ภาพกราฟิกเด่น
   ภาพหน้าจอ ทั้งไทยและอังกฤษ ถูกใส่ให้ครบ หรือดาวน์โหลด artifact `store-listing` แล้วอัปโหลดเองใน Console ก็ได้
 - **วิดีโอโปรโมต**: อัปโหลด `promo.mp4` ของแต่ละภาษา (artifact `store-listing`, โฟลเดอร์ `th/` และ `en-US/`) ขึ้น YouTube

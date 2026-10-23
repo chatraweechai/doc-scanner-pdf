@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 "use strict";
 /*
- * Builds the public download page of the Android app for the site repository doc-scanner-pdf/doc-scanner-pdf.github.io
- * (GitHub Pages user site; every link is relative, so the pages also work from a sub-folder):
- *   https://doc-scanner-pdf.github.io/android/   (index.html + the signed APK + version.json)
- * The web app is at the top of the site (https://doc-scanner-pdf.github.io/, doc-scanner-pdf-code/tools/publish-site.sh):
- * the pages link it as ../index.html.
- * The release job of .github/workflows/android.yml runs it with the signed release APK after every test passed.
+ * Builds the public download page of the Android app on the GitHub Pages site of chatraweechai/doc-scanner-pdf
+ * (every link is relative, so the pages work at any address):
+ *   https://chatraweechai.github.io/doc-scanner-pdf/android/   (index.html + the signed APK + version.json)
+ * The web app is at the top of the site (doc-scanner-pdf-code/tools/publish-site.sh): the pages link it as ../index.html.
+ * .github/workflows/pages.yml runs it with the APK of the newest release (checked to be signed with the permanent key).
  *
  *   node tools/site/build-page.js --apk <file.apk> --out <site>/android --version 1.0.N
  *        --cert <signing certificate SHA-256, 64 hex> --source <doc-scanner-pdf-code commit> --app <doc-scanner-pdf-android commit>

@@ -1,9 +1,8 @@
-# The public web site is published from this repository to doc-scanner-pdf/doc-scanner-pdf.github.io (GitHub Pages user site):
-# doc-scanner-pdf-code/tools/publish-site.sh writes the web app to the top of the site → https://doc-scanner-pdf.github.io/
-# (next to the Android app's download page android/, published by android.yml).
+# The public web site is the GitHub Pages site of this repository (pages.yml) → https://chatraweechai.github.io/doc-scanner-pdf/:
+# the web app at the top (doc-scanner-pdf-code/tools/publish-site.sh) next to the Android app's download page android/.
 #
-# Daily check (and on demand) of the live site itself, over HTTPS — it works whether the site repository is public or
-# private and checks what users really get: every file of publish-site.sh's output for the published commit
+# Daily check (and on demand) of the live site itself, over HTTPS — it checks what users really get: every file of
+# publish-site.sh's output for the published commit
 # (version.json) is served byte for byte, and the web app (doc-scanner-pdf-code/doc-scanner-pdf/, README.md aside) has not
 # changed on main since then (nothing left unpublished). Actions are pinned to full commit SHAs.
 name: Published site
@@ -18,7 +17,7 @@ permissions:
 
 jobs:
   published:
-    name: https://doc-scanner-pdf.github.io/ serves the latest web app
+    name: https://chatraweechai.github.io/doc-scanner-pdf/ serves the latest web app
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -30,12 +29,12 @@ jobs:
 
       - name: Live site = publish-site.sh output of its commit, and up to date with main
         env:
-          SITE: https://doc-scanner-pdf.github.io
+          SITE: https://chatraweechai.github.io/doc-scanner-pdf
         run: |
           set -euo pipefail
           get() { curl -fsS --retry 3 --retry-delay 5 --max-time 120 "$@"; }
           get -o "$RUNNER_TEMP/version.json" "$SITE/version.json?t=$(date +%s)" ||
-            { echo "::error::$SITE/version.json not found — the web app is not published from this repository yet (see CLAUDE.md)"; exit 1; }
+            { echo "::error::$SITE/version.json not found — the site is not deployed yet (pages.yml, see CLAUDE.md)"; exit 1; }
           published="$(jq -r '.commit // empty' "$RUNNER_TEMP/version.json")"
           [[ "$published" =~ ^[0-9a-f]{12}$ ]] || { echo "::error::$SITE/version.json has no build commit"; exit 1; }
           commit="$(git rev-parse --verify --quiet "${published}^{commit}")" || { echo "::error::published build ${published} is not a commit of this repository"; exit 1; }
@@ -45,7 +44,7 @@ jobs:
             { echo "::error::no web app at the published build ${published}"; exit 1; }
           listing() { git ls-tree -r "$1" | grep -v $'\tREADME.md$' || true; }
           if [ "$(listing "$tree")" != "$(listing "HEAD:$app")" ]; then
-            echo "::error::the web app changed on main since the published build ${published} — publish it (see CLAUDE.md):"
+            echo "::error::the web app changed on main since the published build ${published} — check pages.yml (see CLAUDE.md):"
             git log --oneline "$commit..HEAD" -- "$app"
             exit 1
           fi

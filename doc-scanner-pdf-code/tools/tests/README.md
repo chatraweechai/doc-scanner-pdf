@@ -1,7 +1,7 @@
 # Browser tests — doc-scanner-pdf
 
 ชุดทดสอบการทำงานจริงของเว็บแอปในเบราว์เซอร์ (Playwright + Chromium) — รันอัตโนมัติใน GitHub Actions
-(`.github/workflows/tests.yml`) ทุกครั้งที่ push และ **ต้องผ่านทั้งหมดก่อนเผยแพร่เว็บไซต์** (`tools/publish-site.sh` → repo `doc-scanner-pdf/doc-scanner-pdf.github.io`)
+(`.github/workflows/tests.yml`) ทุกครั้งที่ push และ **ต้องผ่านทั้งหมดก่อนเผยแพร่เว็บไซต์** (`pages.yml` เผยแพร่เฉพาะ commit ที่ผ่าน → https://chatraweechai.github.io/doc-scanner-pdf/)
 
 ```bash
 cd tools/tests

@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Builds the public web site of doc-scanner-pdf in the site repository doc-scanner-pdf/doc-scanner-pdf.github.io
-# (GitHub Pages user site). The web app is the top of the site → https://doc-scanner-pdf.github.io/ (owner, 2026-10-23),
-# next to the Android app's download page android/ (made by the Android release job, doc-scanner-pdf-android/tools/site).
-# All app code stays in chatraweechai/doc-scanner-pdf (folder doc-scanner-pdf-code/); the site repository only receives
-# this build output.
+# Builds the web app part of the public web site: the GitHub Pages site of chatraweechai/doc-scanner-pdf (.github/workflows/
+# pages.yml) → https://chatraweechai.github.io/doc-scanner-pdf/ (owner, 2026-10-23). The web app is the top of the site,
+# next to the Android app's download page android/ (pages.yml, doc-scanner-pdf-android/tools/site/build-page.js).
 #
-#   tools/publish-site.sh [--commit <rev>] [<site-dir>]
+#   tools/publish-site.sh [--commit <rev>] <site-dir>
 #
-#   <site-dir>  default: ../doc-scanner-pdf.github.io (the site repository cloned next to this repository)
+#   <site-dir>  the site folder (pages.yml: a new one); in an existing folder only the web app's entries are replaced
 #   --commit    commit to publish (default: HEAD). Only committed files are published (git archive), never local edits.
 #               Commits from before the merge into chatraweechai/doc-scanner-pdf (2026-10-22, app at the top level) work too.
 #
@@ -35,15 +33,12 @@ out=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --commit) rev="${2:?--commit needs a revision}"; shift 2 ;;
-    -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
     -*) echo "publish-site: unknown option $1" >&2; exit 2 ;;
     *) [ -z "$out" ] || { echo "publish-site: only one output folder" >&2; exit 2; }; out="$1"; shift ;;
   esac
 done
-if [ -z "$out" ]; then
-  out="$root/../doc-scanner-pdf.github.io"
-  [ -d "$out/.git" ] || { echo "publish-site: clone the site repository first: git clone https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io $out" >&2; exit 1; }
-fi
+[ -n "$out" ] || { echo "publish-site: give the site folder (see --help)" >&2; exit 2; }
 
 commit="$(git -C "$root" rev-parse --verify --quiet "${rev}^{commit}")" || { echo "publish-site: unknown commit '$rev'" >&2; exit 1; }
 build="${commit:0:12}"

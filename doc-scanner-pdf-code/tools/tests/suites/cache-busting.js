@@ -253,8 +253,8 @@ run(async () => {
   fs.rmSync(siteA, { recursive: true, force: true });
   fs.rmSync(siteB, { recursive: true, force: true });
 
-  // 6) publishing (tools/publish-site.sh → doc-scanner-pdf/doc-scanner-pdf.github.io: the web app is the top of the site,
-  //    next to the Android app's download page android/)
+  // 6) publishing (tools/publish-site.sh → the GitHub Pages site of this repository, pages.yml: the web app is the top of
+  //    the site, next to the Android app's download page android/)
   {
     const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { env: { ...process.env, TZ: 'UTC0' }, maxBuffer: 1 << 26 });
     const publish = (out, ...opts) => execFileSync('bash', [path.join(ROOT, 'tools/publish-site.sh'), ...opts, out], { stdio: 'pipe' });
@@ -315,9 +315,12 @@ run(async () => {
       put('.web-app-files', list);
       try { publish(site); return false; } catch (e) { return e.status !== 0 && read(site, 'android/index.html') === 'download page' && fs.existsSync(path.join(site, '.git/HEAD')); }
     });
-    t.check('publish-site: refuses this repository, its folders, the folders around it and /, and a list of entries that are not the web app\'s',
-      refused.length === 6 && badList.length === 3 && !git('status', '--porcelain', '--', 'doc-scanner-pdf', 'tools').toString().includes('D '),
-      `${refused.length}/6 folders, ${badList.length}/3 lists refused`);
+    // no default folder: the site is built by pages.yml into a folder of its own
+    let noFolder = false;
+    try { execFileSync('bash', [path.join(ROOT, 'tools/publish-site.sh')], { stdio: 'pipe' }); } catch (e) { noFolder = e.status === 2; }
+    t.check('publish-site: refuses this repository, its folders, the folders around it and /, a list of entries that are not the web app\'s, and a missing folder',
+      refused.length === 6 && badList.length === 3 && noFolder && !git('status', '--porcelain', '--', 'doc-scanner-pdf', 'tools').toString().includes('D '),
+      `${refused.length}/6 folders, ${badList.length}/3 lists refused, no folder refused ${noFolder}`);
     // the list is replaced by a new file: a link in the site never makes the publish write elsewhere
     const outside = path.join(OUT, 'publish-outside.txt');
     fs.writeFileSync(outside, 'css\n');

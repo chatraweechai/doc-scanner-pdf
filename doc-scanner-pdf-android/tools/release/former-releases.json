@@ -1,7 +1,19 @@
 {
-  "comment": "Releases made before the merge into chatraweechai/doc-scanner-pdf (2026-10-22): they are GitHub Releases of the former repository, and their tags cannot be pushed here from a session — version.js uses these commits as the release tags.",
+  "comment": "Releases made in chatraweechai/doc-scanner-pdf-android before the merge into chatraweechai/doc-scanner-pdf (2026-10-22). Their tags cannot be pushed from a session, so tools/release/version.js uses these commits as the release tags, and .github/workflows/releases-import.yml copies each release into this repository (tag at this commit; files checked against these SHA-256s and, for APKs, the signing certificate). v1.0.20: its GitHub Release was lost with the original account and its files are not in the former repository - they are attached to the copied release by hand (see handoff.md).",
   "repo": "chatraweechai/doc-scanner-pdf-android",
+  "signingCert": "fbbc185cbff5abe1a1b28084df36ff590633e67a86341ae8d44963d4c108db45",
   "releases": {
-    "v1.0.21": "792cba0a070c51569340109fdb4bbd5e6caf81dc"
+    "v1.0.20": {
+      "commit": "3e50abd001bc4f882ba630154703cdb4ec6e2f8f",
+      "files": {}
+    },
+    "v1.0.21": {
+      "commit": "792cba0a070c51569340109fdb4bbd5e6caf81dc",
+      "published": "2026-10-20T17:11:40Z",
+      "files": {
+        "doc-scanner-pdf-1.0.21.apk": "5d30780b29dbc37c00b7bf3df6a5aae885a33a21a8ca98627fa5575b11b9d454",
+        "doc-scanner-pdf-1.0.21.aab": "fb32f570bbae7c94591901b3780c3846b0f6c1e193ddcc71d137d7e770dc9f6e"
+      }
+    }
   }
 }

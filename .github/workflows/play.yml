@@ -145,9 +145,10 @@ jobs:
           [ -n "$VERSION" ] || VERSION="$(node tools/release/version.js | jq -r .version)"
           [[ "$VERSION" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad version '$VERSION'"; exit 1; }
           aab="dist/doc-scanner-pdf-${VERSION}.aab"
-          # releases made before the merge into this repository are in the former repository (tools/release/former-releases.json)
-          rel_repo="$(node tools/release/version.js --release "v${VERSION}" | jq -r .repo)"; rel_repo="${rel_repo:-$GITHUB_REPOSITORY}"
-          gh release download "v${VERSION}" -p "doc-scanner-pdf-${VERSION}.aab" -D dist -R "$rel_repo"
+          # the release of this repository — one made before the merge and not copied yet is still in the former repository
+          former="$(node tools/release/version.js --release "v${VERSION}" | jq -r .repo)"
+          gh release download "v${VERSION}" -p "doc-scanner-pdf-${VERSION}.aab" -D dist -R "$GITHUB_REPOSITORY" ||
+            { [ -n "$former" ] && gh release download "v${VERSION}" -p "doc-scanner-pdf-${VERSION}.aab" -D dist -R "$former"; }
           [ -f "$aab" ] || { echo "::error::$aab is not in release v${VERSION}"; exit 1; }
           certs="$("$JAVA_HOME_21_X64/bin/keytool" -printcert -jarfile "$aab" 2>&1)" || { echo "$certs"; echo "::error::cannot read the signature of $aab"; exit 1; }
           grep -E '^(Signer|Owner|\s+SHA256)' <<<"$certs" || true

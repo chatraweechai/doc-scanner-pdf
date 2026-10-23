@@ -164,20 +164,20 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     const body = wf.slice(wf.indexOf('\nname:'));
     t.check(`${name}: the web app comes from this repository at the commit in source.json (tools/ci/source-checkout.sh); no other code repository or its key; no removed repository names`,
       uses === (name === 'android.yml' ? 2 : 1) && /^\s+working-directory: doc-scanner-pdf-android\s*$/m.test(wf) &&
-      repos.every(r => r === 'doc-scanner-pdf/doc-scanner-pdf.github.io') && !wf.includes('CLAUDE_REPO_KEY') &&
+      !repos.length && !wf.includes('CLAUDE_REPO_KEY') &&
       !/chatrawichai-tech|claude4code|claude4app|claude4gas/.test(body),
       `${uses} source checkouts, repositories ${repos.join(' ') || '-'}`);
   }
 }
 // Release สาธารณะเซ็นด้วยกุญแจถาวรเสมอ: ไม่มี secret กุญแจ → ไม่ออก Release (ล้มพร้อมบอกวิธี) และตรวจว่า APK ไม่ได้เซ็นด้วยกุญแจ debug ก่อนสร้าง
 {
-  const job = workflow.slice(workflow.indexOf('\n  release:'), workflow.indexOf('\n  site:'));
+  const job = workflow.slice(workflow.indexOf('\n  release:'));
   const gate = job.indexOf('if [ "$HAS_KEY" != "true" ]'), create = job.indexOf('gh release create');
   t.check('release: never published without the permanent signing key, and never a debug-signed APK',
     gate > 0 && create > gate && /if \[ "\$HAS_KEY" != "true" \]; then[\s\S]*?exit 1\n\s+fi/.test(job.slice(gate, create)) &&
     job.indexOf("grep -q 'CN=Android Debug'") > gate && job.indexOf("grep -q 'CN=Android Debug'") < create && !job.includes('กุญแจชั่วคราวของเครื่อง build'));
 }
-// หน้าดาวน์โหลดสาธารณะ (tools/site/build-page.js → doc-scanner-pdf/doc-scanner-pdf.github.io, https://doc-scanner-pdf.github.io/android/)
+// หน้าดาวน์โหลดสาธารณะ (tools/site/build-page.js → pages.yml, https://chatraweechai.github.io/doc-scanner-pdf/android/)
 {
   const { build: buildPage } = require('../../site/build-page');
   const site = path.join(OUT, 'site', 'android');
@@ -197,7 +197,7 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     html.includes('href="privacy.html"') && privacy.includes('ไม่เก็บและไม่ส่งข้อมูลใด ๆ') && privacy.includes('No data is collected or shared.') &&
     privacy.includes('io.github.chatrawichaitech.docscanner') && /no internet permission/.test(privacy) && !/<script/i.test(privacy) &&
     privacy.includes(`content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'"`));
-  // เว็บแอปอยู่บนสุดของเว็บไซต์ (https://doc-scanner-pdf.github.io/): หน้าดาวน์โหลดลิงก์ไปที่ ../index.html และใช้ site.css ของโฟลเดอร์เอง
+  // เว็บแอปอยู่บนสุดของเว็บไซต์ (https://chatraweechai.github.io/doc-scanner-pdf/): หน้าดาวน์โหลดลิงก์ไปที่ ../index.html และใช้ site.css ของโฟลเดอร์เอง
   const css = fs.readFileSync(path.join(site, 'site.css'), 'utf8');
   t.check('download page and privacy policy use relative links only (they work at the site root and in a sub-folder): site.css, ../index.html (the web app at the top of the site), ./index.html',
     [html, privacy].every(p => !/(href|src)="\//.test(p) && p.includes('href="site.css"') && !p.includes('../site.css') && !p.includes('../doc-scanner-pdf/')) &&
@@ -224,18 +224,33 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   t.check('download page: bad version, certificate, commit, non-APK file or folder name are refused', refused.length === 7, `${refused.length}/7`);
   fs.rmSync(path.dirname(site), { recursive: true, force: true });
 }
-// กุญแจเขียน repo เว็บไซต์ (SITE_DEPLOY_KEY) ใช้เฉพาะงาน site ของ main หลัง release และตรวจว่า APK เซ็นด้วยกุญแจถาวร
+// เว็บไซต์ = GitHub Pages ของ repo นี้ (pages.yml): หน้าดาวน์โหลดสร้างจาก APK ของ Release ใหม่สุด (ตรวจว่าเซ็นด้วยกุญแจถาวรคนเดียว)
+// ไม่มีกุญแจเขียน repo เว็บไซต์อีกแล้ว; สิทธิ์ deploy มีเฉพาะงาน deploy; Release ก่อนรวม repo คัดลอกโดย releases-import.yml
 {
-  const siteJob = workflow.slice(workflow.indexOf('\n  site:'));
-  const before = workflow.slice(0, workflow.indexOf('\n  site:'));
-  const uses = [...workflow.matchAll(/^.*secrets\.SITE_DEPLOY_KEY.*$/gm)].map(m => m[0].trim());
-  t.check('site deploy key: only in the site job (after the release, main only), as checkout key or yes/no; the Release\'s own APK; debug-signed APKs and older versions refused',
-    !before.includes('SITE_DEPLOY_KEY') && /\n    needs: \[release\]\n/.test(siteJob) &&
-    siteJob.includes("if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.release.outputs.publish == 'true'") &&
-    siteJob.includes('gh release download "v${APP_VERSION}"') && siteJob.includes('expected exactly one signing certificate') &&
-    uses.length === 2 && uses.every(l => /^ssh-key: \$\{\{ secrets\.SITE_DEPLOY_KEY \}\}/.test(l) || /^HAS_KEY: \$\{\{ secrets\.SITE_DEPLOY_KEY != '' \}\}$/.test(l)) &&
-    siteJob.includes('CN=Android Debug') && siteJob.includes('tools/site/build-page.js') &&
-    siteJob.includes('[ "$cur" -gt "$code" ]'), uses.join(' | '));
+  const pages = text(path.join(WORKFLOWS, 'pages.yml'));
+  const imp = text(path.join(WORKFLOWS, 'releases-import.yml'));
+  const all = fs.readdirSync(WORKFLOWS).map(f => text(path.join(WORKFLOWS, f))).join('\n');
+  const build = pages.slice(pages.indexOf('\n  build:'), pages.indexOf('\n  deploy:'));
+  const deploy = pages.slice(pages.indexOf('\n  deploy:'));
+  const pinned = w => [...w.matchAll(/uses: ([^\s@]+)@(\S+)/g)].every(m => /^[0-9a-f]{40}$/.test(m[2]));
+  t.check('pages.yml: web app of a commit whose Web tests passed + download page of the newest release (permanent key only); deploy rights only in the deploy job; no secrets; pinned actions',
+    /workflows: \[Web tests, Android\]/.test(pages) && pages.includes("github.event.workflow_run.conclusion == 'success'") &&
+    build.includes('--workflow tests.yml --branch main --event push --status success') && build.includes('doc-scanner-pdf-code/tools/publish-site.sh --commit "$web"') &&
+    build.includes('node tools/release/version.js --latest-release') && build.includes('expected exactly one signing certificate') &&
+    build.includes("grep -q 'CN=Android Debug'") && build.includes('tools/site/build-page.js') && !/pages: write|id-token/.test(build) &&
+    /permissions:\n      pages: write\n      id-token: write\n/.test(deploy) && /^permissions:\n  contents: read\n/m.test(pages) &&
+    !/secrets\./.test(pages) && pinned(pages) && /persist-credentials: false/.test(pages));
+  t.check('no workflow writes to the former site repository any more (no SITE_DEPLOY_KEY, no checkout of doc-scanner-pdf/doc-scanner-pdf.github.io)',
+    !all.includes('SITE_DEPLOY_KEY') && !/repository: doc-scanner-pdf\/doc-scanner-pdf\.github\.io/.test(all));
+  const f = require('../../release/version').FORMER;
+  t.check('releases-import.yml: copies only missing releases, tag at the recorded commit, files checked by SHA-256 and APKs by the permanent certificate before the release is made; contents: write only there',
+    imp.includes('gh release view "$tag" -R "$GITHUB_REPOSITORY"') && imp.indexOf('sha256sum') < imp.indexOf('gh release create') &&
+    imp.indexOf('[ "$digests" = "$cert" ]') < imp.indexOf('gh release create') && imp.includes('--target "$commit"') &&
+    imp.includes('is at ${have:0:12} here, not at the recorded') && /^permissions:\n  contents: read\n/m.test(imp) &&
+    (imp.match(/contents: write/g) || []).length === 1 && !/secrets\./.test(imp) && pinned(imp) &&
+    /^[0-9a-f]{64}$/.test(f.signingCert) && Object.values(f.releases).every(x => /^[0-9a-f]{40}$/.test(x.commit) &&
+      Object.entries(x.files).every(([n, h]) => /^doc-scanner-pdf-\d+\.\d+\.\d+\.(apk|aab)$/.test(n) && /^[0-9a-f]{64}$/.test(h))),
+    Object.keys(f.releases).join(' '));
 }
 // เลขรุ่นจาก CHANGELOG.md และออก Release เฉพาะรุ่นใหม่ของแอปที่เปลี่ยนจริง (ห้ามรุ่นใหม่ปลอม/ออกซ้ำ)
 {
@@ -272,6 +287,7 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   const older = decide();                                            // not newer than v1.0.17 → error
   put('CHANGELOG.md', '# log\n\n## v1.0.18 — 2026-09-28\n\n## v1.0.17\n- x\n'); commit('empty entry');
   const empty = decide();                                            // version without notes → error
+  const latestTag = (() => { try { return version.latestRelease(repo).tag; } catch (e) { return e.message; } })();
   // merged into a bigger repository (2026-10-22): everything moves into doc-scanner-pdf-android/; tags from before still count
   put('CHANGELOG.md', changelog('1.0.17', '1.0.16')); commit('back to 1.0.17');
   fs.mkdirSync(path.join(repo, 'doc-scanner-pdf-android.tmp'));
@@ -292,15 +308,24 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     newVersion.action === 'release' && newVersion.tag === 'v1.0.17' && newVersion.latest === 'v1.0.16' && /change in 1\.0\.17/.test(newVersion.notes) &&
     fake.action === 'error' && /ปลอม/.test(fake.reason) && older.action === 'error' && /ไม่ใหม่กว่า/.test(older.reason) && empty.action === 'error',
     [first, docsOnly, noVersion, newVersion, fake, older, empty].map(r => r.action).join(' '));
-  // รุ่นก่อนรวม repo: Release อยู่ใน repo เดิม, commit ที่บันทึกไว้อยู่ในประวัติของ repo นี้และใช้แทน tag (ไม่ออก v1.0.21 ซ้ำ)
+  // รุ่นก่อนรวม repo: commit ที่บันทึกไว้อยู่ในประวัติของ repo นี้และใช้แทน tag (ไม่ออก v1.0.21 ซ้ำ); ไฟล์ของรุ่นที่ยังไม่ได้คัดลอกหาจาก repo เดิม
   const former = Object.keys(version.FORMER.releases).map(tag => { try { return version.release(ROOT, tag); } catch (e) { return { tag, error: e.message }; } });
-  t.check('releases from before the merge: recorded commits are in this history and count as release tags; their files come from the former repository',
-    former.length >= 1 && former.every(r => /^[0-9a-f]{40}$/.test(r.commit || '') && r.repo === 'chatraweechai/doc-scanner-pdf-android') &&
-    version.FORMER.releases['v1.0.21'] === '792cba0a070c51569340109fdb4bbd5e6caf81dc' &&
-    (workflow.match(/node tools\/release\/version\.js --release/g) || []).length === 1 &&
-    text(path.join(WORKFLOWS, 'play.yml')).includes('node tools/release/version.js --release'),
-    JSON.stringify(former));
-  const release = workflow.slice(workflow.indexOf('\n  release:'), workflow.indexOf('\n  site:'));
+  const latest = (() => { try { return version.latestRelease(ROOT); } catch (e) { return { error: e.message }; } })();
+  t.check('releases from before the merge (v1.0.20, v1.0.21): recorded commits are in this history and count as release tags; the newest release is found; Play and the site try this repository first',
+    former.length >= 2 && former.every(r => /^[0-9a-f]{40}$/.test(r.commit || '') && r.repo === 'chatraweechai/doc-scanner-pdf-android') &&
+    version.FORMER.releases['v1.0.21'].commit === '792cba0a070c51569340109fdb4bbd5e6caf81dc' &&
+    version.FORMER.releases['v1.0.21'].files['doc-scanner-pdf-1.0.21.apk'] === '5d30780b29dbc37c00b7bf3df6a5aae885a33a21a8ca98627fa5575b11b9d454' &&
+    version.FORMER.releases['v1.0.20'].commit === '3e50abd001bc4f882ba630154703cdb4ec6e2f8f' &&
+    /^v\d+\.\d+\.\d+$/.test(latest.tag || '') && latestTag === 'v1.0.17' &&
+    text(path.join(WORKFLOWS, 'play.yml')).includes('node tools/release/version.js --release') &&
+    text(path.join(WORKFLOWS, 'play.yml')).includes('-R "$GITHUB_REPOSITORY" ||'),
+    JSON.stringify(former) + ' latest ' + JSON.stringify(latest) + ' scratch ' + latestTag);
+  const cl = '# log\n\n## v1.0.2 — 2026-10-02\n\n- two\n\n## v1.0.1 — 2026-10-01\n\n- one\n  more\n';
+  const notesOf = v => { try { return version.notesOf(cl, v); } catch (e) { return 'error: ' + e.message; } };
+  t.check('version: the notes of any released version from CHANGELOG.md (download page); unknown or bad versions refused',
+    notesOf('1.0.1') === '- one\n  more' && notesOf('1.0.2') === '- two' && /^error/.test(notesOf('1.0.3')) && /^error/.test(notesOf('1.0')) &&
+    /^error/.test(notesOf('1.0.1.*')));
+  const release = workflow.slice(workflow.indexOf('\n  release:'));
   t.check('workflow: build fails early on a bad version; release/site only for a new version (tools/release/version.js --decide)',
     (workflow.match(/node tools\/release\/version\.js --decide/g) || []).length === 2 && release.includes('if [ "$action" != "release" ]') &&
     release.includes('released=true') && release.includes('fetch-depth: 0'), '');

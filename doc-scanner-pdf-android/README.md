@@ -6,10 +6,10 @@
 โดยโค้ดของแอปเหมือนเวอร์ชันเว็บทุกไบต์
 
 โฟลเดอร์นี้คือแอป Android ใน repo รวม [`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf)
-(รวมเมื่อ 2026-10-22 จาก `chatraweechai/doc-scanner-pdf-android` เดิม — ประวัติ commit และ tag ยังอยู่ครบ, Release จนถึง v1.0.21 อยู่ที่
-[repo เดิม](https://github.com/chatraweechai/doc-scanner-pdf-android/releases)) — คำสั่งในไฟล์นี้รันในโฟลเดอร์นี้
+(รวมเมื่อ 2026-10-22 จาก `chatraweechai/doc-scanner-pdf-android` เดิม — ประวัติ commit ยังอยู่ครบ, Release v1.0.20–v1.0.21 ย้ายมาที่
+[Releases ของ repo รวม](https://github.com/chatraweechai/doc-scanner-pdf/releases)) — คำสั่งในไฟล์นี้รันในโฟลเดอร์นี้
 (`doc-scanner-pdf-android/`) ส่วน CI อยู่ที่ `../.github/workflows/` ของ repo รวม; หน้าดาวน์โหลดอยู่ที่
-[`https://doc-scanner-pdf.github.io/android`](https://doc-scanner-pdf.github.io/android)
+[`https://chatraweechai.github.io/doc-scanner-pdf/android/`](https://chatraweechai.github.io/doc-scanner-pdf/android/)
 
 - ทำงานในเครื่องทั้งหมด **ไม่ต้องใช้อินเทอร์เน็ต** (แอปไม่ขอสิทธิ์อินเทอร์เน็ตเลย) — ภาพเอกสารไม่ถูกส่งไปที่ใด
 - **กล้องในแอป** ถ่ายหลายหน้าต่อเนื่องพร้อมกรอบตรวจจับเอกสารแบบสด หรือใช้ **กล้องของเครื่อง** / **เลือกรูปภาพ**
@@ -24,10 +24,9 @@
 
 ## ติดตั้งและอัปเดต
 
-1. เปิดหน้า **https://doc-scanner-pdf.github.io/android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
+1. เปิดหน้า **https://chatraweechai.github.io/doc-scanner-pdf/android/** บนมือถือ/แท็บเล็ต (ไม่ต้องล็อกอิน GitHub)
    แล้วกดดาวน์โหลด `doc-scanner-pdf-1.0.<เลข>.apk` — หน้านี้มีเฉพาะรุ่นล่าสุดที่เซ็นด้วยกุญแจถาวร พร้อมรายการ "มีอะไรใหม่"
-   (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf/releases) ของ repo รวม — รุ่นจนถึง v1.0.21 อยู่ใน
-   [Releases ของ repo เดิม](https://github.com/chatraweechai/doc-scanner-pdf-android/releases))
+   (หรือจากหน้า [Releases](https://github.com/chatraweechai/doc-scanner-pdf/releases) ของ repo รวม)
 2. เปิดไฟล์ที่ดาวน์โหลด — ครั้งแรก Android จะให้อนุญาต "ติดตั้งแอปที่ไม่รู้จัก" ให้เบราว์เซอร์ที่ใช้ดาวน์โหลด
 3. เปิดแอป **สแกนเอกสาร PDF** — ครั้งแรกที่ใช้กล้องในแอป Android จะถามสิทธิ์กล้อง
 
@@ -69,28 +68,15 @@ CI ส่ง secrets เหล่านี้ให้เฉพาะขั้�
 เว็บแอปต้นทางอยู่ใน repo เดียวกัน (`../doc-scanner-pdf-code`) — CI ดึงเว็บแอปที่ commit ใน `doc-scanner-pdf-android/source.json` จากประวัติของ
 repo เอง (`tools/ci/source-checkout.sh`) ไม่ต้องใช้กุญแจหรือ repo อื่น (commit ก่อนรวม repo ก็อยู่ในประวัติ)
 
-## หน้าดาวน์โหลดบนเว็บไซต์ (ทำครั้งเดียว — สำหรับเจ้าของ repo)
+## หน้าดาวน์โหลดบนเว็บไซต์
 
-หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `doc-scanner-pdf/doc-scanner-pdf.github.io`
-(เดิม `chatrawichai-tech/chatrawichai-tech.github.io`)
-→ https://doc-scanner-pdf.github.io/android/
-(`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์ — ลิงก์เว็บแอปที่หน้าแรกของเว็บไซต์ `../index.html`,
-APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`, `site.css` ของโฟลเดอร์เอง, `version.json` พร้อม SHA-256 และลายนิ้วมือใบรับรอง) — งานนี้ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว
+เว็บไซต์คือ GitHub Pages ของ repo รวม → https://chatraweechai.github.io/doc-scanner-pdf/ (ตั้งแต่ 2026-10-23) — workflow `pages.yml`
+สร้างหน้าดาวน์โหลด `android/` → https://chatraweechai.github.io/doc-scanner-pdf/android/ จาก APK ของ Release ใหม่สุดทุกครั้งที่
+workflow Android ผ่านบน `main` (`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์ — ลิงก์เว็บแอปที่หน้าแรกของ
+เว็บไซต์ `../index.html`, APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`, `site.css` ของโฟลเดอร์เอง, `version.json` พร้อม SHA-256 และลายนิ้วมือ
+ใบรับรอง) — ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว ไม่ต้องใช้ deploy key ใด ๆ
 
-งานนี้ใช้ **deploy key ที่เขียนได้** ของ repo เว็บไซต์ (เขียนได้เฉพาะ repo นั้น ไม่เกี่ยวกับ repo อื่น):
-
-1. สร้างกุญแจบนเครื่องของคุณ — ถ้าถาม passphrase ให้กด Enter ว่างไว้ 2 ครั้ง:
-   ```bash
-   ssh-keygen -t ed25519 -C "doc-scanner-pdf-android-site" -f site_deploy_key
-   ```
-2. repo **doc-scanner-pdf** (เว็บไซต์) → Settings → **Deploy keys** → **Add deploy key**: Title `doc-scanner-pdf-android release (APK)`,
-   Key = เนื้อหาไฟล์ `site_deploy_key.pub` — **ติ๊ก Allow write access**
-3. repo **chatraweechai/doc-scanner-pdf** (repo รวม) → Settings → Secrets and variables → Actions → **New repository secret**:
-   ชื่อ `SITE_DEPLOY_KEY` ค่า = เนื้อหาไฟล์ `site_deploy_key` ทั้งหมด (รวมบรรทัด `-----BEGIN…` และ `-----END…`)
-4. ลบไฟล์กุญแจทั้งสองในเครื่องได้เลย
-
-CI ส่งกุญแจนี้ให้เฉพาะงาน `site` ของ `main` (หลังออก Release แล้ว) — ถ้ายังไม่ได้ตั้ง งาน `site` จะแจ้ง error `SITE_DEPLOY_KEY`
-(Release ยังออกตามปกติ) ตั้งแล้วกด Re-run failed jobs ของรอบนั้นได้เลย
+ตั้งค่าครั้งเดียว (เจ้าของ repo): repo รวม → Settings → **Pages** → Build and deployment → Source: **GitHub Actions**
 
 ## ความปลอดภัย
 
@@ -118,11 +104,12 @@ doc-scanner-pdf-android/                 โปรเจกต์ Android (เ�
   source.json                            commit ต้นทางของเว็บแอป + SHA-256 ของทุกไฟล์ต้นทาง
 tools/convert/build.js                   ตัวแปลง doc-scanner-pdf-code → Android (templates/platform.js = AppPlatform ของ Android)
 tools/tests/                             ทดสอบหน้าเว็บของแอปใน Chromium: convert, webview, screens, parity, play
-tools/site/build-page.js                 หน้าดาวน์โหลด APK + นโยบายความเป็นส่วนตัว (privacy.html) บน doc-scanner-pdf.github.io/android/
+tools/site/build-page.js                 หน้าดาวน์โหลด APK + นโยบายความเป็นส่วนตัว (privacy.html) บน chatraweechai.github.io/doc-scanner-pdf/android/
 tools/store/                             หน้าร้าน Google Play: ข้อความไทย/อังกฤษ (listing/), รูปหน้าร้าน (build.js), วิดีโอโปรโมต (video.js)
 tools/play/publish.js                    อัปโหลดแอป + หน้าร้านขึ้น Google Play (Android Publisher API)
 tools/ci/                                สคริปต์ของ CI (ตรวจ Gradle wrapper, เปิด emulator, ดึงเว็บแอปที่ commit ต้นทาง)
-../.github/workflows/android.yml         CI: sync → ทดสอบ → build → emulator → Release → หน้าดาวน์โหลดบนเว็บไซต์
+../.github/workflows/android.yml         CI: sync → ทดสอบ → build → emulator → Release
+../.github/workflows/pages.yml           เว็บไซต์ (GitHub Pages): เว็บแอปที่ผ่านชุดทดสอบ + หน้าดาวน์โหลดของ Release ใหม่สุด
 ../.github/workflows/play.yml            Google Play (กดรันเอง): รูปหน้าร้าน/วิดีโอ → อัปโหลดขึ้น Play — ขั้นตอนทั้งหมดใน PLAY_STORE.md
 ```
 

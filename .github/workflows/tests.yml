@@ -1,7 +1,7 @@
 # Browser tests of the web app (doc-scanner-pdf-code/tools/tests, Playwright + Chromium).
-# Runs on every push/PR that touches the web app or its tools. The web site is published from a passing commit to
-# doc-scanner-pdf/doc-scanner-pdf.github.io with doc-scanner-pdf-code/tools/publish-site.sh (see CLAUDE.md,
-# published-site.yml). The Android app has its own workflow (android.yml).
+# Runs on every push/PR that touches the web app or its tools. pages.yml publishes the web app of the newest main commit
+# that passed here to https://chatraweechai.github.io/doc-scanner-pdf/ (see CLAUDE.md, published-site.yml).
+# The Android app has its own workflow (android.yml).
 name: Web tests
 
 on:
