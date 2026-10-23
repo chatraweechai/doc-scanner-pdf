@@ -105,10 +105,10 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
    ของ repo เว็บไซต์ → https://doc-scanner-pdf.github.io/version.json ต้องเป็น commit ใหม่ → Actions → Published site → Run workflow
 3. **Google Play**: อัปโหลด `.aab` v1.0.21 ผ่าน `play.yml` ของ repo นี้ (ดึง AAB จาก Release ของ repo Android เดิมให้อัตโนมัติ)
    แล้วกด Publish ใน Publishing overview (Managed publishing เปิดอยู่)
-5. **GitHub Pages ของ repo รวม** (ข้อ 0.3): ถ้าไม่ได้ตั้งใจ ปิดที่ Settings → Pages → Source: None (เว็บไซต์จริงคือ
-   https://doc-scanner-pdf.github.io/); ถ้าตั้งใจใช้ ให้ Claude ทำ workflow เผยแพร่เว็บแอปแบบประทับเลข build ที่ root ของ Pages นั้นแทน
 4. (แนะนำ) เมื่อ CI ของ repo รวมเขียวแล้ว **Archive** repo เดิมทั้งสอง (Settings → Archive) เพื่อไม่ให้ CI รายวันของ repo เดิมทำงานซ้ำ
    — อย่าลบ repo Android เดิม เพราะ Release v1.0.21 (APK/AAB) อยู่ที่นั่น
+5. **GitHub Pages ของ repo รวม** (ข้อ 0.3): ถ้าไม่ได้ตั้งใจ ปิดที่ Settings → Pages → Source: None (เว็บไซต์จริงคือ
+   https://doc-scanner-pdf.github.io/); ถ้าตั้งใจใช้ ให้ Claude ทำ workflow เผยแพร่เว็บแอปแบบประทับเลข build ที่ root ของ Pages นั้นแทน
 
 ## 2. ยังไม่ได้ทำในเครื่อง (ทำใน CI แทน)
 
