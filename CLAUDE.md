@@ -18,10 +18,14 @@ as release tags. Earlier names: `chatrawichai-tech/claude4code`
     brightness, shadow removal, color/B&W modes, OCR (Thai + English), searchable PDF, HEIC/HEIF/WebP photos,
     PDF → JPG (small/standard/high) and PDF → Word (.docx) with exact Thai text (`js/pdf-tools.js`, PDF.js).
     **HTML + CSS + JavaScript only** — no PHP, TypeScript, Python, bundler or build step.
-    Published to the site repository, folder `doc-scanner-pdf/` → https://doc-scanner-pdf.github.io/doc-scanner-pdf/.
+    Published to the top of the site repository → https://doc-scanner-pdf.github.io/ (owner, 2026-10-23: the web app is
+    the site's start page; the old address /doc-scanner-pdf/ is gone), next to the Android download page `android/`.
   - `tools/tests/` — Playwright browser tests (`node run-all.js`), see its README.
-  - `tools/publish-site.sh` — builds the site folder from a commit (git archive + `tools/stamp-build.sh`, which stamps
-    the commit and commit time for cache busting; same commit → identical files; commits from before the merge work too).
+  - `tools/publish-site.sh` — publishes a commit to the top of the site (git archive + `tools/stamp-build.sh`, which
+    stamps the commit and commit time for cache busting; same commit → identical files; commits from before the merge
+    work too). It replaces only the web app's own entries (listed in `.web-app-files` for the next publish) — never
+    `android/`, `.git` or the site's other files — leaves out the app's README.md and adds, on the site only, the link to
+    the Android download page on the start page (the app's own index.html stays unchanged, so the Android app does not).
   - `tools/opencv-build/` — config + smoke test for the vendored OpenCV.js builds (`opencv-build.yml`).
   - `CHANGELOG.md` — what changed for users of the web app, newest first (Thai).
 - `doc-scanner-pdf-android/` — the Android app, phones + tablets (was `chatraweechai/doc-scanner-pdf-android`).
@@ -49,7 +53,8 @@ as release tags. Earlier names: `chatrawichai-tech/claude4code`
     in `chatraweechai/doc-scanner-pdf-android`; the `site` and Play upload jobs fetch those from there
     (`version.js --release vX.Y.Z` → commit + repository, from `former-releases.json`), newer ones from this repository.
   - After the Release, the `site` job pushes the same APK (refused unless signed with the permanent key) and its
-    download page (`tools/site/build-page.js`, relative links only) to the site repository, folder `android/` →
+    download page (`tools/site/build-page.js`, relative links only: its own `site.css`, the web app as `../index.html` —
+    the owner's layout of 2026-10-22) to the site repository, folder `android/` →
     https://doc-scanner-pdf.github.io/android/, with the write deploy key in the secret `SITE_DEPLOY_KEY`
     (README: หน้าดาวน์โหลดบนเว็บไซต์). Only that job may use it (checked by the convert suite).
   - Google Play (`PLAY_STORE.md` = the owner's steps in Thai): the release job also builds the `.aab` (same signing key =
@@ -64,7 +69,8 @@ as release tags. Earlier names: `chatrawichai-tech/claude4code`
     parity, play) with `CLAUDE4CODE_SRC` = the web app at the commit in `source.json`:
     `CLAUDE4CODE_SRC="$(../ci/source-checkout.sh /tmp/code-src)" node run-all.js` (a git worktree; remove it afterwards
     with `git worktree remove /tmp/code-src`). `app/src/test` — JUnit; `app/src/androidTest` — the real app on emulators.
-- `.github/workflows/` — all CI of both: `tests.yml` (web tests), `published-site.yml` (daily: site = latest web app),
+- `.github/workflows/` — all CI of both: `tests.yml` (web tests), `published-site.yml` (daily, over HTTPS: the live site
+  serves `publish-site.sh`'s output byte for byte and the latest web app — no key needed, the site repository may be private),
   `opencv-build.yml`, `android.yml` (sync → page tests → build → emulators → Release → download page), `play.yml`.
   Repository secrets (Settings → Secrets and variables → Actions of this repository, set by the owner — never sent in
   chat): `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`,
@@ -116,10 +122,9 @@ the Android app and tested. Concretely:
    (phone, small phone, tablet), the Release and the `site` job (the download page serves the new version).
 6. **Publish the web site** (only after the tests pass on the pushed commit): clone `doc-scanner-pdf/doc-scanner-pdf.github.io`
    next to this repository (`../doc-scanner-pdf.github.io`), run `doc-scanner-pdf-code/tools/publish-site.sh` (defaults to
-   `../doc-scanner-pdf.github.io/doc-scanner-pdf`), review the diff, commit and push that repository's `main` following its
-   CLAUDE.md. Its workflow checks the live site file by file — confirm it is green and that
-   https://doc-scanner-pdf.github.io/doc-scanner-pdf/version.json reports the new commit. `published-site.yml` checks daily
-   that the published folder is exactly `publish-site.sh`'s output and that nothing is left unpublished.
+   the top of `../doc-scanner-pdf.github.io`), review the diff (`android/` must be untouched), commit and push that
+   repository's `main`. Confirm that https://doc-scanner-pdf.github.io/version.json reports the new commit and run
+   `published-site.yml` (Run workflow) — it checks the live site file by file, and daily that nothing is left unpublished.
 
 ## Platform-neutral app code
 

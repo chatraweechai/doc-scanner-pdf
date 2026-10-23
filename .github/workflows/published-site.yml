@@ -1,11 +1,11 @@
 # The public web site is published from this repository to doc-scanner-pdf/doc-scanner-pdf.github.io (GitHub Pages user site):
-# doc-scanner-pdf-code/tools/publish-site.sh writes doc-scanner-pdf/ there → https://doc-scanner-pdf.github.io/doc-scanner-pdf/
+# doc-scanner-pdf-code/tools/publish-site.sh writes the web app to the top of the site → https://doc-scanner-pdf.github.io/
+# (next to the Android app's download page android/, published by android.yml).
 #
-# Daily check (and on demand) that the published folder is exactly publish-site.sh's output for its commit
-# and that the web app (doc-scanner-pdf-code/doc-scanner-pdf/) has not changed on main since then (nothing left
-# unpublished). Commits from before the merge into this repository (chatraweechai/doc-scanner-pdf-code, app at the
-# top level) are part of the history, so a site published from them is checked the same way.
-# The site repository is public, so it is read without credentials. Actions are pinned to full commit SHAs.
+# Daily check (and on demand) of the live site itself, over HTTPS — it works whether the site repository is public or
+# private and checks what users really get: every file of publish-site.sh's output for the published commit
+# (version.json) is served byte for byte, and the web app (doc-scanner-pdf-code/doc-scanner-pdf/, README.md aside) has not
+# changed on main since then (nothing left unpublished). Actions are pinned to full commit SHAs.
 name: Published site
 
 on:
@@ -18,9 +18,9 @@ permissions:
 
 jobs:
   published:
-    name: The site repository serves the latest doc-scanner-pdf
+    name: https://doc-scanner-pdf.github.io/ serves the latest web app
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout (all history)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,31 +28,40 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Checkout the site repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: doc-scanner-pdf/doc-scanner-pdf.github.io
-          path: site
-          persist-credentials: false
-
-      - name: Published folder = publish-site.sh output, and up to date with main
+      - name: Live site = publish-site.sh output of its commit, and up to date with main
+        env:
+          SITE: https://doc-scanner-pdf.github.io
         run: |
           set -euo pipefail
-          published="$(jq -r '.commit // empty' site/doc-scanner-pdf/version.json)"
-          [[ "$published" =~ ^[0-9a-f]{12}$ ]] || { echo "::error::site doc-scanner-pdf/version.json has no build commit"; exit 1; }
+          get() { curl -fsS --retry 3 --retry-delay 5 --max-time 120 "$@"; }
+          get -o "$RUNNER_TEMP/version.json" "$SITE/version.json?t=$(date +%s)" ||
+            { echo "::error::$SITE/version.json not found — the web app is not published from this repository yet (see CLAUDE.md)"; exit 1; }
+          published="$(jq -r '.commit // empty' "$RUNNER_TEMP/version.json")"
+          [[ "$published" =~ ^[0-9a-f]{12}$ ]] || { echo "::error::$SITE/version.json has no build commit"; exit 1; }
           commit="$(git rev-parse --verify --quiet "${published}^{commit}")" || { echo "::error::published build ${published} is not a commit of this repository"; exit 1; }
           app=doc-scanner-pdf-code/doc-scanner-pdf
           # the web app at the published commit: in its folder, or at the top level before the merge
           tree="$(git rev-parse --verify --quiet "$commit:$app" || git rev-parse --verify --quiet "$commit:doc-scanner-pdf")" ||
             { echo "::error::no web app at the published build ${published}"; exit 1; }
-          if [ "$tree" != "$(git rev-parse HEAD:$app)" ]; then
+          listing() { git ls-tree -r "$1" | grep -v $'\tREADME.md$' || true; }
+          if [ "$(listing "$tree")" != "$(listing "HEAD:$app")" ]; then
             echo "::error::the web app changed on main since the published build ${published} — publish it (see CLAUDE.md):"
             git log --oneline "$commit..HEAD" -- "$app"
             exit 1
           fi
           doc-scanner-pdf-code/tools/publish-site.sh --commit "$commit" "$RUNNER_TEMP/expected"
-          if ! diff -r "$RUNNER_TEMP/expected" site/doc-scanner-pdf; then
-            echo "::error::the published folder is not tools/publish-site.sh's output for ${published}"
-            exit 1
-          fi
-          echo "doc-scanner-pdf/doc-scanner-pdf.github.io: doc-scanner-pdf/ is doc-scanner-pdf@${published}; the web app is unchanged on main since then"
+          cd "$RUNNER_TEMP/expected"
+          bad=0; n=0
+          while IFS= read -r f; do
+            f="${f#./}"
+            [ "$f" = .web-app-files ] && continue
+            [[ "$f" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo "::error::unexpected file name $f"; bad=1; continue; }
+            n=$((n + 1))
+            if ! get -o "$RUNNER_TEMP/live/$f" --create-dirs "$SITE/$f"; then
+              echo "::error::$SITE/$f is not served"; bad=1
+            elif ! cmp -s "$f" "$RUNNER_TEMP/live/$f"; then
+              echo "::error::$SITE/$f differs from publish-site.sh's output for ${published}"; bad=1
+            fi
+          done < <(find . -type f | LC_ALL=C sort)
+          [ "$bad" = 0 ] || exit 1
+          echo "$SITE/ serves doc-scanner-pdf@${published} ($n files, byte for byte); the web app is unchanged on main since then"

@@ -4,7 +4,7 @@
 เขียนด้วย **HTML + CSS + JavaScript ล้วน** (ไม่มี PHP / TypeScript / Python ไม่ต้อง build)
 ภาพทั้งหมดประมวลผลในเบราว์เซอร์ของผู้ใช้ **ไม่มีการอัปโหลดไปที่เซิร์ฟเวอร์ใด**
 
-**ใช้งานออนไลน์:** https://doc-scanner-pdf.github.io/doc-scanner-pdf/
+**ใช้งานออนไลน์:** https://doc-scanner-pdf.github.io/
 
 **แอป Android (มือถือและแท็บเล็ต):** โฟลเดอร์ `doc-scanner-pdf-android/` ของ repo
 [`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf) — แปลงอัตโนมัติจากโค้ดชุดนี้ ทำงานในเครื่องโดยไม่ต้องใช้อินเทอร์เน็ต
@@ -32,7 +32,7 @@
 
 ## วิธีใช้งาน
 
-1. เปิด https://doc-scanner-pdf.github.io/doc-scanner-pdf/ หรือเปิดไฟล์ `index.html` ในเครื่องได้ทันที (ดับเบิลคลิก)
+1. เปิด https://doc-scanner-pdf.github.io/ หรือเปิดไฟล์ `index.html` ในเครื่องได้ทันที (ดับเบิลคลิก)
    ไลบรารีทั้งหมดอยู่ในโฟลเดอร์ `vendor/` จึงไม่ต้องพึ่ง CDN ภายนอก
 2. กด **ถ่ายภาพ** หรือ **เลือกรูปภาพ** ระบบจะครอปตามขอบกระดาษ ลบเงา และปรับภาพให้อัตโนมัติ
 3. แตะที่หน้าเพื่อ **ครอป / ปรับขอบ** หรือเปลี่ยนรูปแบบภาพ ปรับแสง หมุนภาพ
@@ -90,12 +90,12 @@
 ### นำขึ้นเว็บ (แนะนำ เพื่อใช้กล้องบนมือถือ)
 
 เว็บไซต์เผยแพร่ผ่าน GitHub Pages ของ repo [`doc-scanner-pdf/doc-scanner-pdf.github.io`](https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io)
-ในโฟลเดอร์ `doc-scanner-pdf/` (→ https://doc-scanner-pdf.github.io/doc-scanner-pdf/) ส่วนโค้ดทั้งหมดอยู่ในโฟลเดอร์ `doc-scanner-pdf-code/` ของ repo
+เป็นหน้าแรกของเว็บไซต์ (→ https://doc-scanner-pdf.github.io/ คู่กับหน้าดาวน์โหลดแอป Android ที่ `android/`) ส่วนโค้ดทั้งหมดอยู่ในโฟลเดอร์ `doc-scanner-pdf-code/` ของ repo
 [`chatraweechai/doc-scanner-pdf`](https://github.com/chatraweechai/doc-scanner-pdf) (ก่อน 2026-10-22 คือ `chatraweechai/doc-scanner-pdf-code`, เดิม `chatrawichai-tech/claude4code` และ `claude`)
 ทุกครั้งที่แก้ไข:
 1. รันชุดทดสอบในเบราว์เซอร์ทั้งหมด (`tools/tests`) — ต้องผ่านก่อนเผยแพร่ (CI รันซ้ำทุกครั้งที่ push)
-2. `tools/publish-site.sh` สร้างโฟลเดอร์เว็บจาก commit ที่ push แล้ว ประทับเลข commit (`tools/stamp-build.sh`)
-   ลงในโฟลเดอร์ `doc-scanner-pdf/` ของ repo เว็บไซต์ แล้ว commit/push repo นั้น
+2. `tools/publish-site.sh` เผยแพร่เว็บแอปจาก commit ที่ push แล้ว ประทับเลข commit (`tools/stamp-build.sh`)
+   ลงที่ root ของ repo เว็บไซต์ (แทนที่เฉพาะไฟล์ของเว็บแอป ไม่แตะโฟลเดอร์ `android/`) แล้ว commit/push repo นั้น
 3. CI ของ repo เว็บไซต์ตรวจเว็บจริงว่าให้บริการเวอร์ชันใหม่ครบทุกไฟล์ (`version.json`) และ CI ของ repo นี้ตรวจทุกวันว่าไม่มีการแก้ที่ยังไม่เผยแพร่
 
 ที่อยู่เดิมบน chatrawichai-tech.github.io และ chatrawichai-envbr.github.io ใช้ไม่ได้แล้ว — ใช้ที่อยู่ด้านบนแทน

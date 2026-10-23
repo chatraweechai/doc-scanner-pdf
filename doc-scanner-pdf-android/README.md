@@ -74,8 +74,8 @@ repo เอง (`tools/ci/source-checkout.sh`) ไม่ต้องใช้ก
 หลังออก Release ทุกครั้ง งาน `site` ของ CI จะ push APK รุ่นเดียวกันพร้อมหน้าดาวน์โหลดไปที่ repo เว็บไซต์ `doc-scanner-pdf/doc-scanner-pdf.github.io`
 (เดิม `chatrawichai-tech/chatrawichai-tech.github.io`)
 → https://doc-scanner-pdf.github.io/android/
-(`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์, APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`,
-`version.json` พร้อม SHA-256 และลายนิ้วมือใบรับรอง) — งานนี้ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว
+(`tools/site/build-page.js`: `index.html` ไม่มีสคริปต์ + CSP เข้มงวด + ลิงก์แบบสัมพัทธ์ — ลิงก์เว็บแอปที่หน้าแรกของเว็บไซต์ `../index.html`,
+APK รุ่นล่าสุดไฟล์เดียว, `privacy.html`, `site.css` ของโฟลเดอร์เอง, `version.json` พร้อม SHA-256 และลายนิ้วมือใบรับรอง) — งานนี้ตรวจก่อนว่า APK เซ็นด้วยกุญแจถาวร (ไม่ใช่กุญแจ debug) และมีผู้เซ็นคนเดียว
 
 งานนี้ใช้ **deploy key ที่เขียนได้** ของ repo เว็บไซต์ (เขียนได้เฉพาะ repo นั้น ไม่เกี่ยวกับ repo อื่น):
 

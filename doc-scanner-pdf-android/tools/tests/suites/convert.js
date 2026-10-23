@@ -197,11 +197,17 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
     html.includes('href="privacy.html"') && privacy.includes('ไม่เก็บและไม่ส่งข้อมูลใด ๆ') && privacy.includes('No data is collected or shared.') &&
     privacy.includes('io.github.chatrawichaitech.docscanner') && /no internet permission/.test(privacy) && !/<script/i.test(privacy) &&
     privacy.includes(`content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'"`));
-  t.check('download page and privacy policy use relative links only (they work at the site root and in a sub-folder): ../site.css, ../, ../doc-scanner-pdf/',
-    [html, privacy].every(p => !/(href|src)="\//.test(p) && p.includes('href="../site.css"')) && html.includes('href="../"') &&
-    html.includes('href="../doc-scanner-pdf/"') && privacy.includes('href="./"') && !/chatrawichai-tech/.test(html + privacy));
-  t.check('download page: only the latest APK, its page, the privacy policy and version.json; hashes match; no scripts, strict CSP',
-    JSON.stringify(files) === JSON.stringify(['doc-scanner-pdf-1.0.8.apk', 'index.html', 'privacy.html', 'version.json']) && vj.sha256 === apkHash && v.sha256 === apkHash &&
+  // เว็บแอปอยู่บนสุดของเว็บไซต์ (https://doc-scanner-pdf.github.io/): หน้าดาวน์โหลดลิงก์ไปที่ ../index.html และใช้ site.css ของโฟลเดอร์เอง
+  const css = fs.readFileSync(path.join(site, 'site.css'), 'utf8');
+  t.check('download page and privacy policy use relative links only (they work at the site root and in a sub-folder): site.css, ../index.html (the web app at the top of the site), ./index.html',
+    [html, privacy].every(p => !/(href|src)="\//.test(p) && p.includes('href="site.css"') && !p.includes('../site.css') && !p.includes('../doc-scanner-pdf/')) &&
+    html.split('href="../index.html"').length === 3 && privacy.includes('href="./index.html"') && !/chatrawichai-tech/.test(html + privacy) &&
+    css.includes('code.hash') && !/@import|url\(|<|expression\(/i.test(css), `${css.length} B site.css`);
+  t.check('privacy policy: contact only through the developer email of the Google Play page (no other contact links)',
+    privacy.includes('ทางอีเมลของผู้พัฒนาที่แสดงในหน้าแอปบน Google Play</li>') && privacy.includes("the developer email shown on the app's Google Play page.</li>") &&
+    !/github\.com/.test(privacy));
+  t.check('download page: only the latest APK, its page, the privacy policy, site.css and version.json; hashes match; no scripts, strict CSP',
+    JSON.stringify(files) === JSON.stringify(['doc-scanner-pdf-1.0.8.apk', 'index.html', 'privacy.html', 'site.css', 'version.json']) && vj.sha256 === apkHash && v.sha256 === apkHash &&
     vj.version === '1.0.8' && vj.versionCode === 1000008 && html.includes('href="doc-scanner-pdf-1.0.8.apk" download') && html.includes(apkHash) &&
     html.includes('AB:AB:AB') && !/<script/i.test(html) && html.includes(`content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'"`),
     files.join(' '));

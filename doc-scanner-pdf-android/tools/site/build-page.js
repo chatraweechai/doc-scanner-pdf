@@ -4,15 +4,17 @@
  * Builds the public download page of the Android app for the site repository doc-scanner-pdf/doc-scanner-pdf.github.io
  * (GitHub Pages user site; every link is relative, so the pages also work from a sub-folder):
  *   https://doc-scanner-pdf.github.io/android/   (index.html + the signed APK + version.json)
+ * The web app is at the top of the site (https://doc-scanner-pdf.github.io/, doc-scanner-pdf-code/tools/publish-site.sh):
+ * the pages link it as ../index.html.
  * The release job of .github/workflows/android.yml runs it with the signed release APK after every test passed.
  *
  *   node tools/site/build-page.js --apk <file.apk> --out <site>/android --version 1.0.N
  *        --cert <signing certificate SHA-256, 64 hex> --source <doc-scanner-pdf-code commit> --app <doc-scanner-pdf-android commit>
  *        [--notes <changelog of this version, markdown list>] [--published <ISO time>]
  *
- * The folder is replaced by exactly four files: index.html, privacy.html (privacy policy in Thai and English — the
- * Google Play listing links it), version.json and doc-scanner-pdf-<version>.apk.
- * No scripts on the page, strict CSP, styles from the site's site.css (../site.css).
+ * The folder is replaced by exactly five files: index.html, privacy.html (privacy policy in Thai and English — the
+ * Google Play listing links it), site.css, version.json and doc-scanner-pdf-<version>.apk.
+ * No scripts on the page, strict CSP, styles from site.css in the same folder (the top of the site is the web app).
  */
 const fs = require("fs");
 const path = require("path");
@@ -20,6 +22,30 @@ const crypto = require("crypto");
 
 const FOLDER = "android";
 const MAX_APK = 95 * 1024 * 1024; // GitHub refuses files over 100 MB
+
+// styles of the download page and the privacy policy (android/site.css; the owner's stylesheet of 2026-10-22)
+const SITE_CSS = `:root { color-scheme: light dark; --bg: #f4f6fb; --card: #fff; --text: #172033; --muted: #5b6478; --primary: #1f5eff; --border: #dde3ee; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1420; --card: #182033; --text: #e8ecf5; --muted: #9aa4ba; --primary: #6f97ff; --border: #2a3450; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", Tahoma, sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 48px 16px; }
+h1 { margin: 0 0 4px; font-size: 1.6rem; }
+p { margin: 0 0 16px; color: var(--muted); }
+.apps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
+.app { display: block; padding: 18px 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--card);
+  color: inherit; text-decoration: none; }
+.app:hover, .app:focus-visible { border-color: var(--primary); outline: none; }
+.app strong { display: block; font-size: 1.15rem; color: var(--primary); }
+.app span { color: var(--muted); }
+a { color: var(--primary); }
+h2 { margin: 28px 0 8px; font-size: 1.15rem; }
+ol, ul:not(.apps) { margin: 0 0 16px; padding-left: 1.4em; color: var(--muted); }
+li { margin: 4px 0; }
+code.hash { font: .85rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); word-break: break-all; }
+`;
 
 function fail(msg) {
   throw new Error("build-page: " + msg);
@@ -82,11 +108,11 @@ function page(v) {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>สแกนเอกสาร PDF — แอป Android</title>
-  <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
   <main>
-    <p><a href="../">สแกนเอกสารเป็น PDF</a></p>
+    <p><a href="../index.html">สแกนเอกสาร PDF — เวอร์ชันเว็บ</a></p>
     <h1>สแกนเอกสาร PDF — แอป Android</h1>
     <p>ถ่ายภาพหรือเลือกรูปเอกสาร ครอปตามขอบกระดาษ ลบเงา ปรับให้คมชัด แปลงข้อความ (OCR ไทย + อังกฤษ) และสร้าง PDF ที่ค้นหาข้อความได้
       — ทำงานในเครื่องทั้งหมด ไม่ต้องใช้อินเทอร์เน็ต สำหรับมือถือและแท็บเล็ต Android 8.0 ขึ้นไป</p>
@@ -124,7 +150,7 @@ ${v.notes.map((n) => `      <li>${esc(n)}</li>`).join("\n")}
       <li>ทุกรุ่นผ่านการทดสอบบนมือถือ มือถือจอเล็ก และแท็บเล็ต (emulator) ก่อนเผยแพร่</li>
     </ul>
 
-    <p>ใช้บนคอมพิวเตอร์หรือไม่ต้องการติดตั้ง: <a href="../doc-scanner-pdf/">เวอร์ชันเว็บ</a></p>
+    <p>ใช้บนคอมพิวเตอร์หรือไม่ต้องการติดตั้ง: <a href="../index.html">เวอร์ชันเว็บ</a></p>
     <p><a href="privacy.html">นโยบายความเป็นส่วนตัว · Privacy policy</a></p>
   </main>
 </body>
@@ -143,11 +169,11 @@ function privacyPage() {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>นโยบายความเป็นส่วนตัว · Privacy policy — สแกนเอกสาร PDF (Doc Scanner PDF)</title>
-  <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
   <main>
-    <p><a href="./">สแกนเอกสาร PDF — แอป Android</a></p>
+    <p><a href="./index.html">สแกนเอกสาร PDF — แอป Android</a></p>
     <h1>นโยบายความเป็นส่วนตัว</h1>
     <p>แอป <strong>สแกนเอกสาร PDF</strong> (Doc Scanner PDF, <code>io.github.chatrawichaitech.docscanner</code>) โดย chatraweechai
       — มีผลตั้งแต่ ${PRIVACY_DATE}</p>
@@ -162,7 +188,7 @@ function privacyPage() {
         และหายไปเมื่อลบข้อมูลแอปหรือถอนการติดตั้ง</li>
       <li><strong>เด็ก</strong> — แอปไม่ได้เก็บข้อมูลของผู้ใช้คนใด รวมถึงเด็ก</li>
       <li><strong>การเปลี่ยนแปลง</strong> — หากนโยบายนี้เปลี่ยน จะแก้ไขที่หน้านี้พร้อมวันที่มีผล</li>
-      <li><strong>ติดต่อ</strong> — ทางอีเมลของผู้พัฒนาที่แสดงในหน้าแอปบน Google Play หรือ <a href="https://github.com/chatraweechai">github.com/chatraweechai</a></li>
+      <li><strong>ติดต่อ</strong> — ทางอีเมลของผู้พัฒนาที่แสดงในหน้าแอปบน Google Play</li>
     </ul>
 
     <h2 lang="en">Privacy policy</h2>
@@ -181,8 +207,7 @@ function privacyPage() {
         and are removed when you clear the app's data or uninstall it.</li>
       <li><strong>Children</strong> — the app does not collect data from anyone, including children.</li>
       <li><strong>Changes</strong> — if this policy changes, this page is updated with its effective date.</li>
-      <li><strong>Contact</strong> — the developer email shown on the app's Google Play page, or
-        <a href="https://github.com/chatraweechai">github.com/chatraweechai</a>.</li>
+      <li><strong>Contact</strong> — the developer email shown on the app's Google Play page.</li>
     </ul>
     </div>
   </main>
@@ -244,6 +269,7 @@ function build(opts) {
   );
   fs.writeFileSync(path.join(out, "index.html"), page(v));
   fs.writeFileSync(path.join(out, "privacy.html"), privacyPage());
+  fs.writeFileSync(path.join(out, "site.css"), SITE_CSS);
   return v;
 }
 

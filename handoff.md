@@ -1,4 +1,4 @@
-# Handoff — doc-scanner-pdf (สถานะ 2026-10-22 เวลาไทย)
+# Handoff — doc-scanner-pdf (สถานะ 2026-10-23 เวลาไทย)
 
 **repo หลักตอนนี้คือ `chatraweechai/doc-scanner-pdf`** (repo รวม) — เว็บแอปอยู่ใน `doc-scanner-pdf-code/`, แอป Android อยู่ใน
 `doc-scanner-pdf-android/`, CI ทั้งหมดอยู่ใน `.github/workflows/` · กฎการทำงานของเจ้าของอยู่ใน `CLAUDE.md` (ตอบภาษาไทยเท่านั้น
@@ -67,6 +67,22 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
     → น่าจะเปลี่ยนเป็น private → `published-site.yml` จะล้มรายวันจนกว่าจะเป็น public หรือใส่กุญแจอ่าน
   - session นี้อ่าน/เขียน repo เว็บไซต์ไม่ได้ (add_repo: ต้องมี push access) — ตรวจได้เฉพาะจากเว็บจริงและ log ของ CI
 
+### 0.3 เว็บแอปที่ root ของเว็บไซต์ (เจ้าของเลือก (ข), 2026-10-23)
+
+- `doc-scanner-pdf-code/tools/publish-site.sh`: เผยแพร่ลง root ของ `../doc-scanner-pdf.github.io` (ค่าเริ่มต้น) แทนที่เฉพาะรายการของเว็บแอป
+  (`css js vendor index.html version.json` — บันทึกใน `.web-app-files` เพื่อลบของเก่าที่แอปไม่มีแล้วในรอบถัดไป) ไม่แตะ `android/`, `.git`
+  และไฟล์อื่นของเว็บไซต์; ไม่นำ `README.md` ของเว็บแอปขึ้นเว็บ; ใส่ลิงก์ `android/index.html` (ข้อความเดียวกับที่เจ้าของใส่ไว้) บนหน้าแรก
+  เฉพาะบนเว็บไซต์ — `index.html` ของแอปไม่เปลี่ยน แอป Android จึงไม่เปลี่ยน; ปฏิเสธ repo นี้ โฟลเดอร์ของ repo โฟลเดอร์ที่ครอบ repo และ `/`
+  (สคริปต์เดิมไม่กันโฟลเดอร์ที่ครอบ repo — แก้แล้ว)
+- `published-site.yml`: ตรวจเว็บจริงผ่าน HTTPS ทีละไฟล์ (ไม่ต้องใช้กุญแจ แม้ repo เว็บไซต์เป็น private) — ทดลองกับเว็บตอนนี้: 84/87 ไฟล์ตรงทุกไบต์
+  ต่างเฉพาะ `index.html`, `js/boot.js` (ยังไม่ประทับเลข build) และไม่มี `version.json` → จะผ่านเมื่อเผยแพร่ด้วยสคริปต์
+- `doc-scanner-pdf-android/tools/site/build-page.js`: สร้างหน้าดาวน์โหลดแบบเดียวกับที่เจ้าของแก้บนเว็บ (`site.css` ของโฟลเดอร์เอง,
+  ลิงก์ `../index.html` "สแกนเอกสาร PDF — เวอร์ชันเว็บ", privacy `./index.html`, ติดต่อผ่านอีเมลบน Google Play เท่านั้น) — สร้าง v1.0.21
+  ใหม่แล้วตรงกับเว็บจริงทุกไบต์ ยกเว้นรายการ "มีอะไรใหม่" ข้อ 2 ที่เจ้าของลบออกจากหน้าเว็บ (ยังอยู่ใน CHANGELOG v1.0.21 เป็นประวัติ;
+  งาน `site` ไม่สร้างหน้า v1.0.21 ใหม่เพราะเว็บมี APK นี้แล้ว)
+- ทดสอบ: เว็บ cache-busting 28/28 (การเผยแพร่ใหม่ 5 ข้อ), Android convert 41/41; ไฟล์แอป Android ไม่เปลี่ยน (`--as-commit` OK)
+- เอกสาร: CLAUDE.md, README.md, README ของเว็บแอปและแอป Android, CHANGELOG เว็บ 2026-10-23
+
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
 
 1. **Secrets ของ repo รวม** (Settings → Secrets and variables → Actions ของ `chatraweechai/doc-scanner-pdf`; secrets คัดลอกข้าม repo
@@ -74,12 +90,10 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
    `ANDROID_KEY_PASSWORD` (ค่าเดียวกับใน repo Android เดิม — ไม่มีก็ยังทำงานได้จนกว่าจะออกรุ่นใหม่ ซึ่งจะล้มพร้อมบอกวิธี),
    `SITE_DEPLOY_KEY` (private key เดียวกับ secret ใน repo Android เดิมใช้ได้เลย — deploy key อยู่ที่ repo เว็บไซต์; หน้าดาวน์โหลดเป็น
    v1.0.21 แล้ว งาน `site` ของ repo รวมจะเห็นว่าไม่มีอะไรต้องเปลี่ยน), `PLAY_SERVICE_ACCOUNT_JSON` (เฉพาะ `play.yml`)
-2. **ตัดสินใจโครงสร้างเว็บไซต์ แล้วเผยแพร่เว็บแอป** (ข้อ 0.2): เครื่องมือยังเผยแพร่เว็บแอปลงโฟลเดอร์ `doc-scanner-pdf/` แต่เว็บจริงตอนนี้
-   เว็บแอปอยู่ที่ root (ยังไม่ประทับเลข build) — เลือก (ก) กลับไปใช้ `/doc-scanner-pdf/` ตามเดิม หรือ (ข) ใช้ root เป็นเว็บแอปถาวร
-   (ต้องปรับ `publish-site.sh`, `published-site.yml`, `build-page.js` ให้ตรง — Claude ทำได้เมื่อเจ้าของเลือก) จากนั้นเผยแพร่:
-   session ไม่มีสิทธิ์ push repo เว็บไซต์ — ให้สิทธิ์ Claude GitHub App กับ org `doc-scanner-pdf` หรือรันเอง (clone ไว้ข้าง repo นี้เป็น
-   `../doc-scanner-pdf.github.io` แล้ว `doc-scanner-pdf-code/tools/publish-site.sh` → commit/push main ของ repo เว็บไซต์)
-   และถ้า repo เว็บไซต์เป็น private: ทำเป็น public หรือให้ Claude เพิ่มกุญแจอ่านใน `published-site.yml`
+2. **เผยแพร่เว็บแอปที่ root** (เลือกแล้ว (ข), เครื่องมือพร้อมแล้ว — ข้อ 0.3): session ไม่มีสิทธิ์ push repo เว็บไซต์ — ให้สิทธิ์ Claude GitHub
+   App กับ org `doc-scanner-pdf` หรือรันเอง: clone ไว้ข้าง repo นี้เป็น `../doc-scanner-pdf.github.io` แล้ว
+   `doc-scanner-pdf-code/tools/publish-site.sh` (ไม่ต้องใส่โฟลเดอร์) → ตรวจ `git status` ว่า `android/` ไม่เปลี่ยน → commit/push main
+   ของ repo เว็บไซต์ → https://doc-scanner-pdf.github.io/version.json ต้องเป็น commit ใหม่ → Actions → Published site → Run workflow
 3. **Google Play**: อัปโหลด `.aab` v1.0.21 ผ่าน `play.yml` ของ repo นี้ (ดึง AAB จาก Release ของ repo Android เดิมให้อัตโนมัติ)
    แล้วกด Publish ใน Publishing overview (Managed publishing เปิดอยู่)
 4. (แนะนำ) เมื่อ CI ของ repo รวมเขียวแล้ว **Archive** repo เดิมทั้งสอง (Settings → Archive) เพื่อไม่ให้ CI รายวันของ repo เดิมทำงานซ้ำ

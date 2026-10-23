@@ -253,47 +253,72 @@ run(async () => {
   fs.rmSync(siteA, { recursive: true, force: true });
   fs.rmSync(siteB, { recursive: true, force: true });
 
-  // 6) publishing (tools/publish-site.sh → doc-scanner-pdf/doc-scanner-pdf.github.io, folder doc-scanner-pdf/)
+  // 6) publishing (tools/publish-site.sh → doc-scanner-pdf/doc-scanner-pdf.github.io: the web app is the top of the site,
+  //    next to the Android app's download page android/)
   {
     const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { env: { ...process.env, TZ: 'UTC0' }, maxBuffer: 1 << 26 });
     const publish = (out, ...opts) => execFileSync('bash', [path.join(ROOT, 'tools/publish-site.sh'), ...opts, out], { stdio: 'pipe' });
     const files = dir => fs.readdirSync(dir, { recursive: true }).filter(f => fs.statSync(path.join(dir, f)).isFile()).map(f => f.split(path.sep).join('/')).sort();
+    const read = (...p) => fs.readFileSync(path.join(...p), 'utf8');
     const head = git('rev-parse', 'HEAD').toString().trim();
     const build = head.slice(0, 12);
     const builtAt = git('log', '-1', '--format=%cd', '--date=format-local:%Y-%m-%dT%H:%M:%SZ', head).toString().trim();
     const pubA = path.join(OUT, 'publish-a');
     const pubB = path.join(OUT, 'publish-b');
+    for (const d of [pubA, pubB]) fs.rmSync(d, { recursive: true, force: true });
     publish(pubA);
     publish(pubB, '--commit', head);
 
-    // committed files only (not local edits), stamped with the commit and its time
+    // committed files only (not local edits) without README.md (documentation of the repository), stamped with the
+    // commit and its time, and the list of the web app's entries for the next publish
     const tracked = git('ls-tree', '-r', '--name-only', head, '--', 'doc-scanner-pdf').toString().trim().split('\n')
-      .map(f => f.slice('doc-scanner-pdf/'.length));
+      .map(f => f.slice('doc-scanner-pdf/'.length)).filter(f => f !== 'README.md');
     const got = files(pubA);
-    const expected = tracked.concat('version.json').sort();
-    const stamped = ['index.html', 'js/boot.js', 'version.json'];
+    const expected = tracked.concat('version.json', '.web-app-files').sort();
+    const stamped = ['index.html', 'js/boot.js', 'version.json', '.web-app-files'];
     const changed = got.filter(f => !stamped.includes(f) && !fs.readFileSync(path.join(pubA, f)).equals(git('show', `${head}:./doc-scanner-pdf/${f}`)));
-    const vj = JSON.parse(fs.readFileSync(path.join(pubA, 'version.json'), 'utf8'));
-    t.check('publish-site: the committed app, stamped with the commit and its time',
+    const vj = JSON.parse(read(pubA, 'version.json'));
+    t.check('publish-site: the committed app (without its README), stamped with the commit and its time',
       JSON.stringify(got) === JSON.stringify(expected) && !changed.length && vj.commit === build && vj.builtAt === builtAt &&
-      fs.readFileSync(path.join(pubA, 'index.html'), 'utf8').includes(`js/boot.js?v=${build}"`) &&
-      fs.readFileSync(path.join(pubA, 'js/boot.js'), 'utf8').includes(`var BUILD = '${build}';`),
+      read(pubA, 'index.html').includes(`js/boot.js?v=${build}"`) && read(pubA, 'js/boot.js').includes(`var BUILD = '${build}';`),
       `${got.length} files, version ${JSON.stringify(vj)} ${changed.join(' ')}`);
+    // the site's start page links the Android app's download page; the app's own index.html does not change
+    const index = read(pubA, 'index.html');
+    const committed = git('show', `${head}:./doc-scanner-pdf/index.html`).toString().split('__APP_BUILD__').join(build);
+    const linkLine = (index.match(/^.*<a href="android\/index\.html">.*\n\n/m) || [''])[0];
+    t.check('publish-site: the start page links android/index.html once — added on the site only, the rest is the stamped app page',
+      index.split('href="android/index.html"').length === 2 && !committed.includes('android/index.html') &&
+      /^\s+<center><p><a href="android\/index\.html">[^<]+<\/a><\/p><\/center>\n\n$/.test(linkLine) && index.replace(linkLine, '') === committed,
+      linkLine.trim());
     const diff = files(pubA).filter(f => !fs.readFileSync(path.join(pubA, f)).equals(fs.readFileSync(path.join(pubB, f))));
     t.check('publish-site: publishing the same commit again gives identical files', JSON.stringify(files(pubA)) === JSON.stringify(files(pubB)) && !diff.length, diff.join(' '));
 
-    // the output folder is replaced as a whole: never this repository's files or a git repository
-    const refused = [path.join(ROOT, 'doc-scanner-pdf'), path.join(ROOT, 'tools'), ROOT, '/'].filter(dir => {
-      try { publish(dir); return false; } catch (e) { return e.status !== 0; }
+    // only the web app's entries are replaced: the rest of the site (android/, .git, the site's own files) stays;
+    // entries of an older publish that the app no longer has are removed
+    const site = path.join(OUT, 'publish-site');
+    fs.rmSync(site, { recursive: true, force: true });
+    const put = (f, body) => { fs.mkdirSync(path.dirname(path.join(site, f)), { recursive: true }); fs.writeFileSync(path.join(site, f), body); };
+    put('.git/HEAD', 'ref: refs/heads/main\n'); put('android/index.html', 'download page'); put('CNAME', 'example.org');
+    put('old.js', 'stale'); put('css/stale.css', 'stale'); put('.web-app-files', 'css\nold.js\nindex.html\n');
+    publish(site);
+    const kept = read(site, 'android/index.html') === 'download page' && read(site, '.git/HEAD').startsWith('ref:') && read(site, 'CNAME') === 'example.org';
+    const removed = !fs.existsSync(path.join(site, 'old.js')) && !fs.existsSync(path.join(site, 'css/stale.css')) && fs.existsSync(path.join(site, 'css/style.css'));
+    const listed = read(site, '.web-app-files') === read(pubA, '.web-app-files') && read(pubA, '.web-app-files') === 'css\nindex.html\njs\nvendor\nversion.json\n';
+    t.check('publish-site: keeps android/, .git and the site\'s own files; removes what an older publish left behind',
+      kept && removed && listed && read(site, 'index.html') === index, `kept ${kept}, removed ${removed}, listed ${listed}`);
+
+    // never this repository, its folders or the folders around it, nor the file system root; a list naming the site's
+    // own entries (or anything outside the site) is refused before anything changes
+    const refused = [path.join(ROOT, 'doc-scanner-pdf'), path.join(ROOT, 'tools'), ROOT, path.dirname(ROOT), path.dirname(path.dirname(ROOT)), '/']
+      .filter(dir => { try { publish(dir); return false; } catch (e) { return e.status !== 0; } });
+    const badList = ['android\n', '../outside\n', '.git\n'].filter(list => {
+      put('.web-app-files', list);
+      try { publish(site); return false; } catch (e) { return e.status !== 0 && read(site, 'android/index.html') === 'download page' && fs.existsSync(path.join(site, '.git/HEAD')); }
     });
-    const repo = path.join(OUT, 'publish-repo');
-    fs.rmSync(repo, { recursive: true, force: true });
-    fs.mkdirSync(path.join(repo, '.git'), { recursive: true });
-    let repoKept = false;
-    try { publish(repo); } catch (e) { repoKept = fs.existsSync(path.join(repo, '.git')); }
-    t.check('publish-site: refuses to replace this repository\'s folders or a git repository', refused.length === 4 && repoKept && !git('status', '--porcelain', '--', 'doc-scanner-pdf', 'tools').toString().includes('D '),
-      `${refused.length}/4 refused, repo kept ${repoKept}`);
-    for (const d of [pubA, pubB, repo]) fs.rmSync(d, { recursive: true, force: true });
+    t.check('publish-site: refuses this repository, its folders, the folders around it and /, and a list of entries that are not the web app\'s',
+      refused.length === 6 && badList.length === 3 && !git('status', '--porcelain', '--', 'doc-scanner-pdf', 'tools').toString().includes('D '),
+      `${refused.length}/6 folders, ${badList.length}/3 lists refused`);
+    for (const d of [pubA, pubB, site]) fs.rmSync(d, { recursive: true, force: true });
   }
   t.finish();
 });

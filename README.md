@@ -5,7 +5,7 @@
 
 | โฟลเดอร์ | คืออะไร | ใช้งาน |
 |---|---|---|
-| [`doc-scanner-pdf-code/`](doc-scanner-pdf-code) | เว็บแอป (HTML + CSS + JavaScript ล้วน) + ชุดทดสอบ + เครื่องมือเผยแพร่เว็บไซต์ | https://doc-scanner-pdf.github.io/doc-scanner-pdf/ |
+| [`doc-scanner-pdf-code/`](doc-scanner-pdf-code) | เว็บแอป (HTML + CSS + JavaScript ล้วน) + ชุดทดสอบ + เครื่องมือเผยแพร่เว็บไซต์ | https://doc-scanner-pdf.github.io/ |
 | [`doc-scanner-pdf-android/`](doc-scanner-pdf-android) | แอป Android (มือถือ + แท็บเล็ต) แปลงอัตโนมัติจากเว็บแอป โค้ดเหมือนกันทุกไบต์ | https://doc-scanner-pdf.github.io/android/ |
 | [`.github/workflows/`](.github/workflows) | CI ทั้งหมด: ทดสอบเว็บ, ตรวจเว็บไซต์รายวัน, OpenCV.js, Android (ทดสอบ → emulator → Release → หน้าดาวน์โหลด), Google Play | |
 
