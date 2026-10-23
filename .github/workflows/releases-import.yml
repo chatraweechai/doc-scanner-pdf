@@ -2,8 +2,11 @@
 # (owner, 2026-10-23: "ย้าย release v1.0.20-1.0.21 มาด้วย"): each tag at its recorded commit, each file downloaded from the
 # former repository and checked against its SHA-256 in doc-scanner-pdf-android/tools/release/former-releases.json, every
 # APK also against the permanent signing certificate. Only releases this repository does not have yet are created, so
-# running it again changes nothing. v1.0.20's files were lost with the original account: its release gets its changelog
-# only, and the original files are attached by hand (handoff.md). Actions are pinned to full commit SHAs.
+# running it again changes nothing (also daily, until every release is here). v1.0.20's files were lost with the original
+# account: its release gets its changelog only, and the original files are attached by hand (handoff.md).
+# The tags come first, from the owner: GitHub does not let a workflow token create a tag on a commit whose workflow files
+# differ from main's (as these commits of the former repository do), and the session cannot push tags. The run says
+# which tags are missing and the command that adds them. Actions are pinned to full commit SHAs.
 name: Import former releases
 
 on:
@@ -12,6 +15,8 @@ on:
     paths:
       - doc-scanner-pdf-android/tools/release/former-releases.json
       - .github/workflows/releases-import.yml
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -50,6 +55,7 @@ jobs:
           latest="$(node tools/release/version.js --latest-release | jq -r .tag)"
           bt="$(for d in $(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V); do [ -x "${d}apksigner" ] && echo "$d"; done | tail -1)"
           [ -n "$bt" ] || { echo "::error::no apksigner in $ANDROID_HOME/build-tools"; exit 1; }
+          missing=()
           for tag in $(jq -r '.releases | keys[]' "$f" | sort -V); do
             [[ "$tag" =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || { echo "::error::bad tag $tag"; exit 1; }
             ver="${tag#v}"
@@ -61,6 +67,8 @@ jobs:
             if gh release view "$tag" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
               echo "$tag: already in $GITHUB_REPOSITORY"; continue
             fi
+            # the tag itself has to be pushed by the owner (see the top of this file)
+            [ -n "$have" ] || { missing+=("$commit:refs/tags/$tag"); echo "$tag: waiting for its tag"; continue; }
             dir="$RUNNER_TEMP/$tag"; mkdir -p "$dir"
             files=()
             while IFS=$'\t' read -r name sum; do
@@ -88,7 +96,13 @@ jobs:
             fi
             { echo; echo "ย้ายมาจาก ${from} เมื่อรวม repo (commit ${commit:0:12}) · หน้าดาวน์โหลดตอนนี้: ${PAGE}"; } >> "$dir/notes.md"
             mark=false; [ "$tag" = "$latest" ] && [ "${#files[@]}" -gt 0 ] && mark=true
-            gh release create "$tag" ${files[@]+"${files[@]}"} --target "$commit" --title "สแกนเอกสาร PDF $ver" \
+            gh release create "$tag" ${files[@]+"${files[@]}"} --verify-tag --title "สแกนเอกสาร PDF $ver" \
               --notes-file "$dir/notes.md" --latest="$mark" -R "$GITHUB_REPOSITORY"
             echo "### $tag copied from $from (${#files[@]} files)" >> "$GITHUB_STEP_SUMMARY"
           done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            cmd="git push https://github.com/$GITHUB_REPOSITORY ${missing[*]}"
+            echo "::error title=Tags needed::push the tags of the former releases first (any clone of this repository, with your own GitHub login), then run this workflow again: $cmd"
+            { echo "### Tags needed"; echo; echo '```'; echo "$cmd"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi

@@ -243,9 +243,10 @@ t.check('signing secrets reach only release builds of main (not branches, pull r
   t.check('no workflow writes to the former site repository any more (no SITE_DEPLOY_KEY, no checkout of doc-scanner-pdf/doc-scanner-pdf.github.io)',
     !all.includes('SITE_DEPLOY_KEY') && !/repository: doc-scanner-pdf\/doc-scanner-pdf\.github\.io/.test(all));
   const f = require('../../release/version').FORMER;
-  t.check('releases-import.yml: copies only missing releases, tag at the recorded commit, files checked by SHA-256 and APKs by the permanent certificate before the release is made; contents: write only there',
+  t.check('releases-import.yml: copies only missing releases, on the owner\'s tag at the recorded commit (named in the run when missing), files checked by SHA-256 and APKs by the permanent certificate before the release is made; contents: write only there',
     imp.includes('gh release view "$tag" -R "$GITHUB_REPOSITORY"') && imp.indexOf('sha256sum') < imp.indexOf('gh release create') &&
-    imp.indexOf('[ "$digests" = "$cert" ]') < imp.indexOf('gh release create') && imp.includes('--target "$commit"') &&
+    imp.indexOf('[ "$digests" = "$cert" ]') < imp.indexOf('gh release create') && imp.includes('--verify-tag') && !imp.includes('--target') &&
+    imp.includes('missing+=("$commit:refs/tags/$tag")') && imp.includes('git push https://github.com/$GITHUB_REPOSITORY') &&
     imp.includes('is at ${have:0:12} here, not at the recorded') && /^permissions:\n  contents: read\n/m.test(imp) &&
     (imp.match(/contents: write/g) || []).length === 1 && !/secrets\./.test(imp) && pinned(imp) &&
     /^[0-9a-f]{64}$/.test(f.signingCert) && Object.values(f.releases).every(x => /^[0-9a-f]{40}$/.test(x.commit) &&

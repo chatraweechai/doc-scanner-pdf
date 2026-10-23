@@ -23,7 +23,7 @@ CI `.github/workflows/`, **เว็บไซต์ = GitHub Pages ของ rep
   ให้ตรงกับที่เจ้าของลบจากหน้าเว็บ (ไม่ใช่ไฟล์แอป)
 - **`pages.yml`** (ใหม่): หลัง Web tests หรือ Android ผ่านบน main → สร้างเว็บ: เว็บแอปของ commit ใหม่สุดที่ Web tests ผ่าน +
   `android/` จาก APK ของ Release ใหม่สุด (ตรวจลายเซ็นกุญแจถาวรคนเดียว) → deploy ด้วย `actions/deploy-pages` (ไม่ต้องใช้กุญแจใด ๆ)
-- **`releases-import.yml`** (ใหม่, ทำงานเมื่อ push `former-releases.json`/ตัวเอง หรือกดรัน): สร้าง Release ที่ยังไม่มีใน repo นี้ —
+- **`releases-import.yml`** (ใหม่, ทำงานเมื่อ push `former-releases.json`/ตัวเอง, ทุกวัน หรือกดรัน): สร้าง Release ที่ยังไม่มีใน repo นี้ —
   v1.0.21 (tag ที่ `792cba0`, APK+AAB จาก repo เดิม ตรวจ SHA-256 + ใบรับรอง `fbbc185c…db45`, Latest) และ v1.0.20 (tag ที่ `3e50abd`,
   บันทึกจาก CHANGELOG — **ไฟล์ไม่มีให้คัดลอก**: Release เดิมหายไปกับบัญชีเดิม, APK 1.0.20 บนเว็บไซต์เดิมถูกแทนด้วย 1.0.21 แล้ว)
 - เอางาน `site` (push ไป repo เว็บไซต์ด้วย `SITE_DEPLOY_KEY`) ออกจาก `android.yml`; `play.yml` และ `pages.yml` ดึงไฟล์จาก Release ของ repo นี้
@@ -35,13 +35,20 @@ CI `.github/workflows/`, **เว็บไซต์ = GitHub Pages ของ rep
 
 ### ผล CI
 - `719b4fb` (ก่อนย้ายเว็บไซต์): ✓ Web tests, ✓ Android ทุกงานยกเว้น `site` (ขาด `SITE_DEPLOY_KEY` — งานนี้เอาออกแล้ว)
-- การย้ายเว็บไซต์/Release: (อัปเดตหลัง push)
+- `d435dd7`: ✓ Web tests · ✗ Import former releases: `HTTP 403 Resource not accessible by integration` ตอนสร้าง Release — token ของ
+  Actions (มี contents: write) สร้าง tag ที่ commit เก่าไม่ได้ เพราะ commit เหล่านั้นมี `.github/workflows/` ต่างจาก main (ต้องมีสิทธิ์ workflows)
+  และ session push tag ไม่ได้ → แก้ workflow: ใช้ tag ที่เจ้าของ push ไว้ (`--verify-tag`), ถ้ายังไม่มีจะบอกคำสั่ง (ข้อ 1.2) — ทดลองรันในเครื่อง
+  ด้วย gh จำลองแล้วทั้งกรณีไม่มี tag และมี tag (v1.0.20 ไม่มีไฟล์ ไม่ใช่ latest; v1.0.21 APK+AAB ตรวจ SHA-256/ใบรับรอง เป็น latest)
 
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
 
 1. **เปิดให้ `pages.yml` deploy ได้**: repo นี้ → Settings → Pages → Build and deployment → Source: **GitHub Actions**
    (ตอนนี้เป็น Deploy from a branch ซึ่งแสดง README) แล้ว Actions → Pages → Run workflow (หรือรอ push ถัดไป)
-2. **แนบไฟล์ต้นฉบับของ v1.0.20** ที่ Release v1.0.20 ของ repo นี้ (Releases → v1.0.20 → Edit → แนบไฟล์):
+2. **push tag ของ Release เดิม 2 ตัว** (session/Actions ทำไม่ได้ — ใช้ clone ใดก็ได้ของ repo นี้ด้วยบัญชีของเจ้าของ เช่น Codespaces):
+   `git push https://github.com/chatraweechai/doc-scanner-pdf 3e50abd001bc4f882ba630154703cdb4ec6e2f8f:refs/tags/v1.0.20 792cba0a070c51569340109fdb4bbd5e6caf81dc:refs/tags/v1.0.21`
+   แล้ว Actions → Import former releases → Run workflow (หรือรอรอบรายวัน) — tag ที่ commit เก่าจะทำให้ workflow `android.yml` รุ่นเก่าของ commit นั้น
+   รันหนึ่งรอบต่อ tag (ไม่ออก Release เพราะไม่ใช่ main ยกเลิกได้)
+   จากนั้น **แนบไฟล์ต้นฉบับของ v1.0.20** ที่ Release v1.0.20 ของ repo นี้ (Releases → v1.0.20 → Edit → แนบไฟล์):
    APK อยู่ในประวัติของ repo เว็บไซต์เดิม: `git clone https://github.com/doc-scanner-pdf/doc-scanner-pdf.github.io site && cd site &&
    c=$(git rev-list -n1 HEAD -- android/doc-scanner-pdf-1.0.20.apk) && git show "$c^:android/doc-scanner-pdf-1.0.20.apk" > doc-scanner-pdf-1.0.20.apk`
    (sha256 ต้องขึ้นต้นด้วย `939c54ce`); AAB ดาวน์โหลดได้จาก Play Console → App bundle explorer (versionCode 1000020)
