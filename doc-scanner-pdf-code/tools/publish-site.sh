@@ -98,6 +98,7 @@ fi
 
 for e in ${old[@]+"${old[@]}"} "${entries[@]}"; do rm -rf "${out:?}/$e"; done
 for e in "${entries[@]}"; do mv "$app/$e" "$out/$e"; done
+rm -rf "${out:?}/$MANIFEST"  # a new file: never write through a link the site may hold
 printf '%s\n' "${entries[@]}" > "$out/$MANIFEST"
 
 files="$(cd "$out" && find "${entries[@]}" -type f | wc -l | tr -d ' ')"

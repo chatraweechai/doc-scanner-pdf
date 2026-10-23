@@ -318,7 +318,16 @@ run(async () => {
     t.check('publish-site: refuses this repository, its folders, the folders around it and /, and a list of entries that are not the web app\'s',
       refused.length === 6 && badList.length === 3 && !git('status', '--porcelain', '--', 'doc-scanner-pdf', 'tools').toString().includes('D '),
       `${refused.length}/6 folders, ${badList.length}/3 lists refused`);
-    for (const d of [pubA, pubB, site]) fs.rmSync(d, { recursive: true, force: true });
+    // the list is replaced by a new file: a link in the site never makes the publish write elsewhere
+    const outside = path.join(OUT, 'publish-outside.txt');
+    fs.writeFileSync(outside, 'css\n');
+    fs.rmSync(path.join(site, '.web-app-files'), { force: true });
+    fs.symlinkSync(outside, path.join(site, '.web-app-files'));
+    publish(site);
+    t.check('publish-site: writes its list of entries as a new file, never through a link in the site',
+      fs.readFileSync(outside, 'utf8') === 'css\n' && !fs.lstatSync(path.join(site, '.web-app-files')).isSymbolicLink() &&
+      read(site, '.web-app-files') === read(pubA, '.web-app-files'));
+    for (const d of [pubA, pubB, site, outside]) fs.rmSync(d, { recursive: true, force: true });
   }
   t.finish();
 });

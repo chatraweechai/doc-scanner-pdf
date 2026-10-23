@@ -80,7 +80,9 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
   ลิงก์ `../index.html` "สแกนเอกสาร PDF — เวอร์ชันเว็บ", privacy `./index.html`, ติดต่อผ่านอีเมลบน Google Play เท่านั้น) — สร้าง v1.0.21
   ใหม่แล้วตรงกับเว็บจริงทุกไบต์ ยกเว้นรายการ "มีอะไรใหม่" ข้อ 2 ที่เจ้าของลบออกจากหน้าเว็บ (ยังอยู่ใน CHANGELOG v1.0.21 เป็นประวัติ;
   งาน `site` ไม่สร้างหน้า v1.0.21 ใหม่เพราะเว็บมี APK นี้แล้ว)
-- ทดสอบ: เว็บ cache-busting 28/28 (การเผยแพร่ใหม่ 5 ข้อ), Android convert 41/41; ไฟล์แอป Android ไม่เปลี่ยน (`--as-commit` OK)
+- ทดสอบ: เว็บ cache-busting 29/29 (การเผยแพร่ใหม่ 6 ข้อ), Android convert 41/41; ไฟล์แอป Android ไม่เปลี่ยน (`--as-commit` OK)
+- review หลัง push `55c7c79`: ถ้า `.web-app-files` ในเว็บไซต์เป็น symlink สคริปต์จะเขียนทับไฟล์ปลายทางของลิงก์ → แก้ให้ลบแล้วเขียนไฟล์ใหม่เสมอ
+  + การทดสอบใหม่
 - เอกสาร: CLAUDE.md, README.md, README ของเว็บแอปและแอป Android, CHANGELOG เว็บ 2026-10-23
 
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
