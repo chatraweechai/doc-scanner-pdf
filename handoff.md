@@ -85,6 +85,13 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
   + การทดสอบใหม่
 - เอกสาร: CLAUDE.md, README.md, README ของเว็บแอปและแอป Android, CHANGELOG เว็บ 2026-10-23
 
+- CI `719b4fb`: ✓ Web tests, ✓ Android ทุกงานยกเว้น `site` (ขาด `SITE_DEPLOY_KEY`), ✗ Published site (รอบตามเวลา 2026-10-23 03:09 UTC)
+  แจ้งถูกต้องว่า "https://doc-scanner-pdf.github.io/version.json not found — ยังไม่ได้เผยแพร่จาก repo นี้" → จะผ่านเมื่อเผยแพร่ (ข้อ 1.2)
+- **พบใหม่ 2026-10-23:** repo รวมถูกเปิด **GitHub Pages** (เริ่ม ~03:02 UTC, workflow "pages build and deployment" ทำงานทุก push):
+  https://chatraweechai.github.io/doc-scanner-pdf/ แสดง README.md และเว็บแอปแบบยังไม่ประทับเลข build อยู่ที่
+  `/doc-scanner-pdf/doc-scanner-pdf-code/doc-scanner-pdf/` (ไฟล์ทุกไฟล์ของ repo เปิดดูได้ทางเว็บ — repo เป็น public อยู่แล้ว ไม่มีความลับรั่ว)
+  — session ตรวจการตั้งค่า Pages ทาง API ไม่ได้ (proxy ไม่อนุญาต) รอเจ้าของยืนยันว่าตั้งใจหรือไม่ (ข้อ 1.5)
+
 ## 1. ยังค้าง — ต้องทำโดยเจ้าของ
 
 1. **Secrets ของ repo รวม** (Settings → Secrets and variables → Actions ของ `chatraweechai/doc-scanner-pdf`; secrets คัดลอกข้าม repo
@@ -98,6 +105,8 @@ repo เดิม `chatraweechai/doc-scanner-pdf-code` และ `chatraweechai/
    ของ repo เว็บไซต์ → https://doc-scanner-pdf.github.io/version.json ต้องเป็น commit ใหม่ → Actions → Published site → Run workflow
 3. **Google Play**: อัปโหลด `.aab` v1.0.21 ผ่าน `play.yml` ของ repo นี้ (ดึง AAB จาก Release ของ repo Android เดิมให้อัตโนมัติ)
    แล้วกด Publish ใน Publishing overview (Managed publishing เปิดอยู่)
+5. **GitHub Pages ของ repo รวม** (ข้อ 0.3): ถ้าไม่ได้ตั้งใจ ปิดที่ Settings → Pages → Source: None (เว็บไซต์จริงคือ
+   https://doc-scanner-pdf.github.io/); ถ้าตั้งใจใช้ ให้ Claude ทำ workflow เผยแพร่เว็บแอปแบบประทับเลข build ที่ root ของ Pages นั้นแทน
 4. (แนะนำ) เมื่อ CI ของ repo รวมเขียวแล้ว **Archive** repo เดิมทั้งสอง (Settings → Archive) เพื่อไม่ให้ CI รายวันของ repo เดิมทำงานซ้ำ
    — อย่าลบ repo Android เดิม เพราะ Release v1.0.21 (APK/AAB) อยู่ที่นั่น
 
